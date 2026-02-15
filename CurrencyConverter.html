@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOB Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            color: #e0e0e0;
+            padding: 30px 16px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 36px;
+            width: 460px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 8px 14px;
+            color: #8899aa;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #bbc;
+        }
+
+        .settings-btn.active {
+            background: rgba(93, 173, 226, 0.15);
+            border-color: rgba(93, 173, 226, 0.3);
+            color: #5dade2;
+        }
+
+        .rate-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8899aa;
+            margin-bottom: 24px;
+        }
+
+        .rate-info span { color: #5dade2; font-weight: 600; }
+
+        /* Direction toggle */
+        .direction-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .dir-label {
+            font-size: 1rem;
+            font-weight: 600;
+            min-width: 50px;
+            transition: color 0.3s;
+        }
+
+        .dir-label.active { color: #5dade2; }
+        .dir-label.inactive { color: #556677; }
+        .dir-label.left { text-align: right; }
+        .dir-label.right { text-align: left; }
+
+        .dir-toggle {
+            position: relative;
+            width: 64px;
+            height: 32px;
+            cursor: pointer;
+        }
+
+        .dir-toggle input { display: none; }
+
+        .dir-slider {
+            position: absolute;
+            inset: 0;
+            background: #2c3e50;
+            border-radius: 32px;
+            transition: background 0.3s;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .dir-slider::before {
+            content: '\21C4';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            left: 2px;
+            top: 1px;
+            background: #5dade2;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .dir-toggle input:checked + .dir-slider { background: #1a5276; }
+        .dir-toggle input:checked + .dir-slider::before { transform: translateX(30px); }
+
+        /* Section labels */
+        .section-label {
+            font-size: 0.75rem;
+            color: #667788;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .section-label:first-of-type { margin-top: 0; }
+
+        /* Input group */
+        .input-group { margin-bottom: 16px; }
+
+        .input-wrapper { position: relative; }
+
+        .input-wrapper .prefix {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: #5dade2;
+            font-weight: 700;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 14px 14px 40px;
+            font-size: 1.3rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-wrapper input:focus { border-color: #5dade2; }
+        .input-wrapper input::placeholder { color: #445566; }
+
+        /* Toggle switches (Y/N) */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-row.hidden { display: none; }
+
+        .toggle-row .label-text {
+            font-size: 0.92rem;
+            color: #ccd;
+        }
+
+        .toggle-row .label-cost {
+            font-size: 0.75rem;
+            color: #667;
+            margin-top: 2px;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .switch input { display: none; }
+
+        .switch-slider {
+            position: absolute;
+            inset: 0;
+            background: #2c3e50;
+            border-radius: 28px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .switch-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            top: 2px;
+            background: #778;
+            border-radius: 50%;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .switch input:checked + .switch-slider { background: #1a6b3c; }
+        .switch input:checked + .switch-slider::before {
+            transform: translateX(22px);
+            background: #2ecc71;
+        }
+
+        /* Breakdown */
+        .breakdown {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.88rem;
+            color: #aab;
+        }
+
+        .breakdown-row.deduction { color: #e07070; }
+        .breakdown-row.addition { color: #5dce5d; }
+
+        .breakdown-row.subtotal {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 6px;
+            padding-top: 10px;
+            font-weight: 600;
+            color: #ccd;
+        }
+
+        .breakdown-row.total {
+            border-top: 2px solid rgba(93, 173, 226, 0.3);
+            margin-top: 8px;
+            padding-top: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        /* Result boxes */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+            margin-bottom: 4px;
+        }
+
+        .result-box {
+            background: rgba(93, 173, 226, 0.1);
+            border: 2px solid rgba(93, 173, 226, 0.25);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .result-box.yen {
+            background: rgba(231, 76, 60, 0.1);
+            border-color: rgba(231, 76, 60, 0.25);
+        }
+
+        .result-label {
+            font-size: 0.72rem;
+            color: #8899aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #5dade2;
+        }
+
+        .result-box.yen .result-value { color: #e74c3c; }
+
+        .result-box.is-input {
+            opacity: 0.4;
+            border-style: dashed;
+        }
+
+        .result-box.is-output {
+            transform: scale(1.03);
+        }
+
+        .result-sub {
+            font-size: 0.75rem;
+            color: #667;
+            margin-top: 4px;
+        }
+
+        /* Settings panel */
+        .settings-panel {
+            display: none;
+            margin-top: 14px;
+            margin-bottom: 14px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            border: 1px solid rgba(93, 173, 226, 0.2);
+        }
+
+        .settings-panel.open { display: block; }
+
+        .settings-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5dade2;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .settings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .settings-table td {
+            padding: 8px 0;
+            vertical-align: middle;
+        }
+
+        .settings-table td:first-child {
+            font-size: 0.85rem;
+            color: #99aabb;
+            padding-right: 12px;
+        }
+
+        .settings-table td:last-child {
+            text-align: right;
+        }
+
+        .settings-table input {
+            width: 110px;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+            text-align: right;
+        }
+
+        .settings-table input:focus { border-color: #5dade2; }
+
+        .settings-table tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .settings-table tr:last-child { border-bottom: none; }
+
+        .settings-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 14px;
+        }
+
+        .btn-reset {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 8px;
+            padding: 6px 14px;
+            color: #e07070;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-reset:hover {
+            background: rgba(231, 76, 60, 0.25);
+        }
+
+        .btn-set-defaults {
+            background: rgba(93, 173, 226, 0.15);
+            border: 1px solid rgba(93, 173, 226, 0.3);
+            border-radius: 8px;
+            padding: 6px 14px;
+            color: #5dade2;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-set-defaults:hover {
+            background: rgba(93, 173, 226, 0.25);
+        }
+
+        .settings-saved {
+            font-size: 0.78rem;
+            color: #2ecc71;
+            opacity: 0;
+            transition: opacity 0.3s;
+            line-height: 28px;
+        }
+
+        .settings-saved.show { opacity: 1; }
+
+        /* Status */
+        .status {
+            text-align: center;
+            font-size: 0.72rem;
+            color: #556677;
+            margin-top: 16px;
+        }
+
+        .status.error { color: #e74c3c; }
+
+        /* Divider */
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 18px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <h1>FOB Calculator</h1>
+            <button class="settings-btn" id="settingsBtn">&#9881; Variables</button>
+        </div>
+        <div class="rate-info">
+            Live rate: 1 NZD = <span id="rateDisplay">...</span> JPY
+            <br>Customer rate: 1 NZD = <span id="custRateDisplay">...</span> JPY
+        </div>
+
+        <!-- Settings Panel (shown/hidden via button) -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-title">Variable Costs</div>
+            <table class="settings-table">
+                <tr>
+                    <td>Brokerage</td>
+                    <td><input type="number" id="setCost_brokerage" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>Freight</td>
+                    <td><input type="number" id="setCost_freight" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>Statement of Compliance</td>
+                    <td><input type="number" id="setCost_soc" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>Compliance (European)</td>
+                    <td><input type="number" id="setCost_compEuro" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>Compliance (Other)</td>
+                    <td><input type="number" id="setCost_compOther" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>Heat Treatment</td>
+                    <td><input type="number" id="setCost_heat" min="0" step="any"></td>
+                </tr>
+            </table>
+            <div class="settings-actions">
+                <button class="btn-reset" id="resetBtn">Reset to Defaults</button>
+                <button class="btn-set-defaults" id="setDefaultsBtn">Save as New Defaults</button>
+                <span class="settings-saved" id="savedMsg">Saved</span>
+            </div>
+        </div>
+
+        <!-- Direction Toggle -->
+        <div class="direction-wrapper">
+            <span class="dir-label left active" id="dirLabelLeft">NZD to Yen</span>
+            <label class="dir-toggle">
+                <input type="checkbox" id="directionToggle">
+                <span class="dir-slider"></span>
+            </label>
+            <span class="dir-label right inactive" id="dirLabelRight">Yen to NZD</span>
+        </div>
+
+        <!-- Input -->
+        <div class="section-label" id="inputSectionLabel">Input - NZD Cost to Customer</div>
+        <div class="input-group">
+            <div class="input-wrapper">
+                <span class="prefix" id="inputPrefix">$</span>
+                <input type="number" id="amountInput" placeholder="0.00" min="0" step="any">
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-grid">
+            <div class="result-box" id="nzdResultBox">
+                <div class="result-label">NZD Cost to Customer</div>
+                <div class="result-value" id="totalNZD">$0.00</div>
+                <div class="result-sub">incl. all costs</div>
+            </div>
+            <div class="result-box yen" id="yenResultBox">
+                <div class="result-label">Yen Total</div>
+                <div class="result-value" id="totalJPY">&yen;0</div>
+                <div class="result-sub" id="yenRateSub">@ 0.00/NZD</div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Always applied costs -->
+        <div class="section-label" id="costsSectionLabel">Deductions (all GST-exempt)</div>
+        <div class="toggle-row" style="cursor: default;">
+            <div>
+                <div class="label-text">Brokerage</div>
+                <div class="label-cost" id="brokerageLabel">$575.00</div>
+            </div>
+            <span style="color: #2ecc71; font-size: 0.8rem;">AUTO</span>
+        </div>
+        <div class="toggle-row" style="cursor: default;">
+            <div>
+                <div class="label-text">Freight</div>
+                <div class="label-cost" id="freightLabel">$2,262.00</div>
+            </div>
+            <span style="color: #2ecc71; font-size: 0.8rem;">AUTO</span>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Options -->
+        <div class="section-label">Options (all GST-exempt)</div>
+        <div class="toggle-row">
+            <div>
+                <div class="label-text">European?</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleEuropean">
+                <span class="switch-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-row hidden" id="socRow">
+            <div>
+                <div class="label-text">Statement of Compliance?</div>
+                <div class="label-cost" id="socLabel">$390.00</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleSoC">
+                <span class="switch-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-row">
+            <div>
+                <div class="label-text">Compliance?</div>
+                <div class="label-cost" id="complianceLabel">$1,100.00 (Other)</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleCompliance">
+                <span class="switch-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-row">
+            <div>
+                <div class="label-text">Heat Treatment?</div>
+                <div class="label-cost" id="heatLabel">$225.00</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleHeat">
+                <span class="switch-slider"></span>
+            </label>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="breakdown" id="breakdown"></div>
+
+        <div class="status" id="status">Fetching exchange rate...</div>
+    </div>
+
+    <script>
+        // --- Default values ---
+        const DEFAULTS = {
+            brokerage: 575,
+            freight: 2262,
+            soc: 390,
+            compEuro: 1900,
+            compOther: 1100,
+            heat: 225
+        };
+
+        const STORAGE_KEY = 'fobCalcCosts';
+        const DEFAULTS_KEY = 'fobCalcDefaults';
+
+        // --- Elements ---
+        const amountInput = document.getElementById('amountInput');
+        const directionToggle = document.getElementById('directionToggle');
+        const toggleEuropean = document.getElementById('toggleEuropean');
+        const toggleSoC = document.getElementById('toggleSoC');
+        const toggleCompliance = document.getElementById('toggleCompliance');
+        const toggleHeat = document.getElementById('toggleHeat');
+        const socRow = document.getElementById('socRow');
+        const rateDisplay = document.getElementById('rateDisplay');
+        const custRateDisplay = document.getElementById('custRateDisplay');
+        const statusEl = document.getElementById('status');
+        const breakdownEl = document.getElementById('breakdown');
+        const savedMsg = document.getElementById('savedMsg');
+
+        const setCost = {
+            brokerage: document.getElementById('setCost_brokerage'),
+            freight: document.getElementById('setCost_freight'),
+            soc: document.getElementById('setCost_soc'),
+            compEuro: document.getElementById('setCost_compEuro'),
+            compOther: document.getElementById('setCost_compOther'),
+            heat: document.getElementById('setCost_heat')
+        };
+
+        let liveYenRate = null;
+        const YEN_MARGIN = 0.70;
+
+        // --- LocalStorage: load/save ---
+        function loadCosts() {
+            let saved = null;
+            try {
+                saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            } catch (e) {}
+
+            const values = saved || DEFAULTS;
+
+            setCost.brokerage.value = values.brokerage;
+            setCost.freight.value = values.freight;
+            setCost.soc.value = values.soc;
+            setCost.compEuro.value = values.compEuro;
+            setCost.compOther.value = values.compOther;
+            setCost.heat.value = values.heat;
+        }
+
+        function saveCosts() {
+            const data = {
+                brokerage: parseFloat(setCost.brokerage.value) || 0,
+                freight: parseFloat(setCost.freight.value) || 0,
+                soc: parseFloat(setCost.soc.value) || 0,
+                compEuro: parseFloat(setCost.compEuro.value) || 0,
+                compOther: parseFloat(setCost.compOther.value) || 0,
+                heat: parseFloat(setCost.heat.value) || 0
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+            // Flash "Saved" message
+            savedMsg.classList.add('show');
+            setTimeout(function() { savedMsg.classList.remove('show'); }, 1500);
+        }
+
+        function getDefaults() {
+            try {
+                const custom = JSON.parse(localStorage.getItem(DEFAULTS_KEY));
+                if (custom) return custom;
+            } catch (e) {}
+            return DEFAULTS;
+        }
+
+        function resetToDefaults() {
+            const defs = getDefaults();
+            setCost.brokerage.value = defs.brokerage;
+            setCost.freight.value = defs.freight;
+            setCost.soc.value = defs.soc;
+            setCost.compEuro.value = defs.compEuro;
+            setCost.compOther.value = defs.compOther;
+            setCost.heat.value = defs.heat;
+            saveCosts();
+            calculate();
+        }
+
+        function saveAsDefaults() {
+            const data = {
+                brokerage: parseFloat(setCost.brokerage.value) || 0,
+                freight: parseFloat(setCost.freight.value) || 0,
+                soc: parseFloat(setCost.soc.value) || 0,
+                compEuro: parseFloat(setCost.compEuro.value) || 0,
+                compOther: parseFloat(setCost.compOther.value) || 0,
+                heat: parseFloat(setCost.heat.value) || 0
+            };
+            localStorage.setItem(DEFAULTS_KEY, JSON.stringify(data));
+            savedMsg.textContent = 'New defaults saved';
+            savedMsg.classList.add('show');
+            setTimeout(function() {
+                savedMsg.classList.remove('show');
+                savedMsg.textContent = 'Saved';
+            }, 1500);
+        }
+
+        // --- Fetch live rate ---
+        async function fetchRate() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/NZD');
+                const data = await res.json();
+                if (data.result === 'success') {
+                    liveYenRate = data.rates.JPY;
+                    rateDisplay.textContent = liveYenRate.toFixed(2);
+                    custRateDisplay.textContent = (liveYenRate - YEN_MARGIN).toFixed(2);
+                    statusEl.textContent = 'Rate updated: ' + new Date().toLocaleString();
+                    statusEl.classList.remove('error');
+                    calculate();
+                } else {
+                    throw new Error('API error');
+                }
+            } catch (err) {
+                if (!liveYenRate) {
+                    liveYenRate = 90.0;
+                    rateDisplay.textContent = liveYenRate.toFixed(2) + ' (offline)';
+                    custRateDisplay.textContent = (liveYenRate - YEN_MARGIN).toFixed(2);
+                }
+                statusEl.textContent = 'Could not fetch live rate. Using fallback.';
+                statusEl.classList.add('error');
+            }
+        }
+
+        function getCosts() {
+            return {
+                brokerage: parseFloat(setCost.brokerage.value) || 0,
+                freight: parseFloat(setCost.freight.value) || 0,
+                soc: parseFloat(setCost.soc.value) || 0,
+                compEuro: parseFloat(setCost.compEuro.value) || 0,
+                compOther: parseFloat(setCost.compOther.value) || 0,
+                heat: parseFloat(setCost.heat.value) || 0
+            };
+        }
+
+        function fmtNZD(val) {
+            const sign = val < 0 ? '-' : '';
+            return sign + '$' + Math.round(Math.abs(val)).toLocaleString();
+        }
+
+        function fmtJPY(val) {
+            return '\u00A5' + Math.round(val).toLocaleString();
+        }
+
+        function getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat) {
+            let total = costs.brokerage + costs.freight;
+            if (isEuropean && isSoC) total += costs.soc;
+            if (isCompliance) total += isEuropean ? costs.compEuro : costs.compOther;
+            if (isHeat) total += costs.heat;
+            return total;
+        }
+
+        function getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat) {
+            const items = [
+                { label: 'Brokerage', amount: costs.brokerage },
+                { label: 'Freight', amount: costs.freight }
+            ];
+            if (isEuropean && isSoC) items.push({ label: 'Statement of Compliance', amount: costs.soc });
+            if (isCompliance) {
+                items.push(isEuropean
+                    ? { label: 'Compliance (European)', amount: costs.compEuro }
+                    : { label: 'Compliance (Other)', amount: costs.compOther });
+            }
+            if (isHeat) items.push({ label: 'Heat Treatment', amount: costs.heat });
+            return items;
+        }
+
+        // --- Main calculation ---
+        function calculate() {
+            const costs = getCosts();
+            const inputAmount = parseFloat(amountInput.value) || 0;
+            const isYenToNZD = directionToggle.checked;
+            const isEuropean = toggleEuropean.checked;
+            const isSoC = toggleSoC.checked;
+            const isCompliance = toggleCompliance.checked;
+            const isHeat = toggleHeat.checked;
+            const customerRate = liveYenRate ? (liveYenRate - YEN_MARGIN) : 0;
+
+            const fixedCosts = getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat);
+            const costItems = getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat);
+
+            let nzdExclGST, gst, nzdInclGST, nzdCostToCustomer, yenTotal;
+            let breakdownHTML = '';
+
+            if (isYenToNZD) {
+                yenTotal = inputAmount;
+                nzdExclGST = customerRate ? (yenTotal / customerRate) : 0;
+                gst = nzdExclGST * 0.15;
+                nzdInclGST = nzdExclGST + gst;
+                nzdCostToCustomer = nzdInclGST + fixedCosts;
+
+                breakdownHTML += brkRow('Yen Input', fmtJPY(yenTotal));
+                breakdownHTML += brkRow('&divide; Customer Rate (' + customerRate.toFixed(2) + ')', '');
+                breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
+                breakdownHTML += brkRow('+ GST (15%)', '+' + fmtNZD(gst), 'addition');
+                breakdownHTML += brkRow('NZD Base (incl. GST)', fmtNZD(nzdInclGST), 'subtotal');
+                for (const item of costItems) {
+                    breakdownHTML += brkRow('+ ' + item.label, '+' + fmtNZD(item.amount), 'addition');
+                }
+                breakdownHTML += brkRow('NZD Cost to Customer', fmtNZD(nzdCostToCustomer), 'total');
+            } else {
+                nzdCostToCustomer = inputAmount;
+                nzdInclGST = nzdCostToCustomer - fixedCosts;
+                gst = nzdInclGST * 3 / 23;
+                nzdExclGST = nzdInclGST - gst;
+                yenTotal = nzdExclGST * customerRate;
+
+                breakdownHTML += brkRow('NZD Cost to Customer', fmtNZD(nzdCostToCustomer));
+                for (const item of costItems) {
+                    breakdownHTML += brkRow('- ' + item.label, '-' + fmtNZD(item.amount), 'deduction');
+                }
+                breakdownHTML += brkRow('NZD Base (incl. GST)', fmtNZD(nzdInclGST), 'subtotal');
+                breakdownHTML += brkRow('- GST (3/23 = 15%)', '-' + fmtNZD(gst), 'deduction');
+                breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
+                breakdownHTML += brkRow('&times; Customer Rate (' + customerRate.toFixed(2) + ')', '');
+                breakdownHTML += brkRow('Yen Total', fmtJPY(yenTotal), 'total');
+            }
+
+            breakdownEl.innerHTML = breakdownHTML;
+
+            document.getElementById('totalNZD').textContent = fmtNZD(nzdCostToCustomer);
+            document.getElementById('totalJPY').textContent = fmtJPY(yenTotal);
+            document.getElementById('yenRateSub').textContent = '@ ' + customerRate.toFixed(2) + '/NZD';
+
+            document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
+            document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
+            document.getElementById('socLabel').textContent = fmtNZD(costs.soc);
+            document.getElementById('heatLabel').textContent = fmtNZD(costs.heat);
+            document.getElementById('complianceLabel').textContent = isEuropean
+                ? fmtNZD(costs.compEuro) + ' (European)'
+                : fmtNZD(costs.compOther) + ' (Other)';
+        }
+
+        function brkRow(label, value, cls) {
+            const className = cls ? ' ' + cls : '';
+            return '<div class="breakdown-row' + className + '"><span>' + label + '</span><span>' + value + '</span></div>';
+        }
+
+        // --- Direction toggle ---
+        directionToggle.addEventListener('change', function() {
+            const isYenToNZD = this.checked;
+            document.getElementById('dirLabelLeft').classList.toggle('active', !isYenToNZD);
+            document.getElementById('dirLabelLeft').classList.toggle('inactive', isYenToNZD);
+            document.getElementById('dirLabelRight').classList.toggle('active', isYenToNZD);
+            document.getElementById('dirLabelRight').classList.toggle('inactive', !isYenToNZD);
+
+            const nzdBox = document.getElementById('nzdResultBox');
+            const yenBox = document.getElementById('yenResultBox');
+
+            if (isYenToNZD) {
+                document.getElementById('inputSectionLabel').textContent = 'Input - Yen Amount';
+                document.getElementById('inputPrefix').textContent = '\u00A5';
+                amountInput.placeholder = '0';
+                document.getElementById('costsSectionLabel').textContent = 'Additions (all GST-exempt)';
+                yenBox.classList.add('is-input');
+                yenBox.classList.remove('is-output');
+                nzdBox.classList.add('is-output');
+                nzdBox.classList.remove('is-input');
+            } else {
+                document.getElementById('inputSectionLabel').textContent = 'Input - NZD Cost to Customer';
+                document.getElementById('inputPrefix').textContent = '$';
+                amountInput.placeholder = '0.00';
+                document.getElementById('costsSectionLabel').textContent = 'Deductions (all GST-exempt)';
+                nzdBox.classList.add('is-input');
+                nzdBox.classList.remove('is-output');
+                yenBox.classList.add('is-output');
+                yenBox.classList.remove('is-input');
+            }
+
+            calculate();
+        });
+
+        // --- European toggle ---
+        toggleEuropean.addEventListener('change', function() {
+            if (this.checked) {
+                socRow.classList.remove('hidden');
+            } else {
+                socRow.classList.add('hidden');
+                toggleSoC.checked = false;
+            }
+            calculate();
+        });
+
+        // --- Event listeners ---
+        amountInput.addEventListener('input', calculate);
+        toggleSoC.addEventListener('change', calculate);
+        toggleCompliance.addEventListener('change', calculate);
+        toggleHeat.addEventListener('change', calculate);
+
+        // Settings inputs: save + recalculate on every change
+        Object.values(setCost).forEach(function(input) {
+            input.addEventListener('input', function() {
+                saveCosts();
+                calculate();
+            });
+        });
+
+        // Settings panel toggle
+        document.getElementById('settingsBtn').addEventListener('click', function() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+            this.classList.toggle('active');
+        });
+
+        // Reset & save-as-defaults buttons
+        document.getElementById('resetBtn').addEventListener('click', resetToDefaults);
+        document.getElementById('setDefaultsBtn').addEventListener('click', saveAsDefaults);
+
+        // --- Init ---
+        loadCosts();
+        document.getElementById('nzdResultBox').classList.add('is-input');
+        document.getElementById('yenResultBox').classList.add('is-output');
+        fetchRate();
+        setInterval(fetchRate, 30 * 60 * 1000);
+    </script>
+</body>
+</html>
