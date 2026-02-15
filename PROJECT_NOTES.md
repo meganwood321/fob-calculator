@@ -88,7 +88,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - API: `https://open.er-api.com/v6/latest/NZD` (free, no key required)
 - Rate refreshes every 30 minutes, fallback to 90.0 if offline
 - localStorage for persisting variable costs and custom defaults
-- Chosen for easy Android conversion later
+- All NZD figures rounded to whole numbers (zero decimal places)
+- Hosted on GitHub Pages for access from any device
 
 ## Design
 - Dark theme: navy gradient background (#1a1a2e → #0f3460)
@@ -113,10 +114,22 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 2c** (2026-02-15): Fixed GST to exclude ALL fixed costs (Brokerage, Freight, Heat Treatment, SoC, Compliance) - KEY FIX
 - **Phase 2d** (2026-02-15): Added bi-directional conversion (Yen→NZD and NZD→Yen) with correct GST in both directions - KEY FEATURE
 - **Phase 2e** (2026-02-15): Moved result boxes next to input, added input/output highlighting
-- **Phase 2f** (2026-02-15): Renamed to FOB Calculator, upgraded Variables panel with localStorage persistence, table layout, and "Save as New Defaults" feature - CURRENT
-- **Phase 3** (future): Convert to Android app (Capacitor/WebView)
+- **Phase 2f** (2026-02-15): Renamed to FOB Calculator, upgraded Variables panel with localStorage persistence, table layout, and "Save as New Defaults" feature
+- **Phase 2g** (2026-02-15): Rounded all NZD figures to zero decimal places
+- **Phase 3** (2026-02-15): Deployed to GitHub Pages - CURRENT
+
+## Hosting / GitHub
+- **Live URL**: https://meganwood321.github.io/fob-calculator/
+- **GitHub repo**: https://github.com/meganwood321/fob-calculator
+- **GitHub username**: meganwood321
+- **Branch**: main
+- **GitHub Pages**: enabled, serves from main branch root
+- `index.html` redirects to `CurrencyConverter.html`
+- To update: push changes to main branch, site auto-updates in ~1 min
+- localStorage is per-browser/device (each computer has its own saved Variables)
 
 ## Key File Locations
 - **Megan's actual Desktop**: `D:/Users/Megan/OneDrive/Desktop/` (OneDrive-synced)
 - **Project folder**: `C:/ClaudeProjects/Currency Converter/`
+- **Git repo**: `C:/ClaudeProjects/Currency Converter/.git/`
 - **Note**: `C:/Users/Megan/Desktop/` is NOT the visible desktop
