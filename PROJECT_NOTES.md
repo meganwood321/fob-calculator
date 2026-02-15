@@ -116,7 +116,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 2e** (2026-02-15): Moved result boxes next to input, added input/output highlighting
 - **Phase 2f** (2026-02-15): Renamed to FOB Calculator, upgraded Variables panel with localStorage persistence, table layout, and "Save as New Defaults" feature
 - **Phase 2g** (2026-02-15): Rounded all NZD figures to zero decimal places
-- **Phase 3** (2026-02-15): Deployed to GitHub Pages - CURRENT
+- **Phase 3** (2026-02-15): Deployed to GitHub Pages
+- **Phase 3b** (2026-02-15): Added custom Apple Touch Icon for iPhone home screen - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
@@ -127,6 +128,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - `index.html` redirects to `CurrencyConverter.html`
 - To update: push changes to main branch, site auto-updates in ~1 min
 - localStorage is per-browser/device (each computer has its own saved Variables)
+- **Apple Touch Icon**: `$ → ¥.png` - custom icon for iPhone home screen shortcut
+- Git credentials stored locally (no need to re-enter token for pushes)
 
 ## Key File Locations
 - **Megan's actual Desktop**: `D:/Users/Megan/OneDrive/Desktop/` (OneDrive-synced)
