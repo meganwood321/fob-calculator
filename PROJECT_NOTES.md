@@ -122,7 +122,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 3** (2026-02-15): Deployed to GitHub Pages
 - **Phase 3b** (2026-02-15): Added custom Apple Touch Icon for iPhone home screen
 - **Phase 3c** (2026-02-16): Added Marine Insurance GST ($110) as always-on auto deduction
-- **Phase 3d** (2026-02-16): Added configurable Spot Buy Rate Adjustment variable (default -0.80) - CURRENT
+- **Phase 3d** (2026-02-16): Added configurable Spot Buy Rate Adjustment variable (default -0.80), renamed rate labels
+- **Phase 3e** (2026-02-16): Fixed variables not updating on mobile (added change event, saveAsDefaults triggers recalculation) - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
