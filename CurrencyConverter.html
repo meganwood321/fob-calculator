@@ -745,6 +745,8 @@
                 heat: parseFloat(setCost.heat.value) || 0
             };
             localStorage.setItem(DEFAULTS_KEY, JSON.stringify(data));
+            saveCosts();
+            calculate();
             savedMsg.textContent = 'New defaults saved';
             savedMsg.classList.add('show');
             setTimeout(function() {
@@ -958,6 +960,10 @@
         // Settings inputs: save + recalculate on every change
         Object.values(setCost).forEach(function(input) {
             input.addEventListener('input', function() {
+                saveCosts();
+                calculate();
+            });
+            input.addEventListener('change', function() {
                 saveCosts();
                 calculate();
             });
