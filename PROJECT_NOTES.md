@@ -1,7 +1,7 @@
 # FOB Calculator - Project Notes
 
 ## Overview
-A bi-directional FOB (Free On Board) cost calculator that converts between NZD and Japanese Yen. It applies various GST-exempt deductions (brokerage, freight, compliance, etc.), correctly handles GST in both directions, and uses a live exchange rate minus a 0.70 margin.
+A bi-directional FOB (Free On Board) cost calculator that converts between NZD and Japanese Yen. It applies various GST-exempt deductions (brokerage, freight, compliance, etc.), correctly handles GST in both directions, and uses a live exchange rate with a configurable rate adjustment and a 0.70 customer margin.
 
 Built for Megan starting 2026-02-15.
 
@@ -42,8 +42,9 @@ This was verified against Megan's spreadsheet Sample Calculation tab (Scenario 1
 ## Fixed Costs / Variables
 All costs are GST-exempt and configurable via the Variables panel.
 
-| Item | Default NZD |
+| Item | Default |
 |---|---|
+| Live Rate Adjustment | -0.80 |
 | Brokerage | $575 |
 | Freight | $2,262 |
 | Marine Insurance GST | $110 |
@@ -61,7 +62,7 @@ All costs are GST-exempt and configurable via the Variables panel.
 
 ## Variables Panel Features
 - **"Variables" button** in top-right header opens/closes the panel
-- Clean table layout showing all 6 cost values
+- Clean table layout showing Live Rate Adjustment + all 7 cost values
 - **Auto-saves** to browser localStorage on every edit (persists across sessions)
 - **"Reset to Defaults"** button: restores values to saved defaults
 - **"Save as New Defaults"** button: saves current values as new defaults
@@ -100,8 +101,9 @@ All costs are GST-exempt and configurable via the Variables panel.
 - Responsive, mobile-friendly (460px card width)
 
 ## Yen Rate
-- Fetched live from `open.er-api.com`
-- **Customer rate** = live rate - 0.70 (margin hardcoded)
+- Mid rate fetched live from `open.er-api.com`
+- **Live rate** = API mid rate + Live Rate Adjustment (default -0.80, configurable in Variables)
+- **Customer rate** = adjusted live rate - 0.70 (margin hardcoded)
 - Both rates displayed at top of app
 
 ## localStorage Keys
@@ -119,7 +121,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 2g** (2026-02-15): Rounded all NZD figures to zero decimal places
 - **Phase 3** (2026-02-15): Deployed to GitHub Pages
 - **Phase 3b** (2026-02-15): Added custom Apple Touch Icon for iPhone home screen
-- **Phase 3c** (2026-02-16): Added Marine Insurance GST ($110) as always-on auto deduction - CURRENT
+- **Phase 3c** (2026-02-16): Added Marine Insurance GST ($110) as always-on auto deduction
+- **Phase 3d** (2026-02-16): Added configurable Live Rate Adjustment variable (default -0.80) - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
