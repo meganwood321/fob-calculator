@@ -72,7 +72,7 @@ All costs are GST-exempt and configurable via the Variables panel.
 
 ## UI Layout (top to bottom)
 1. **Header row**: "FOB Calculator" title + Variables button
-2. **Rate info**: Live rate and customer rate (live - 0.70)
+2. **Rate info**: Estimated Spot Buy rate and customer rate
 3. **Direction toggle**: NZD to Yen / Yen to NZD
 4. **Input field**: $ or ¥ prefix changes with direction
 5. **Result boxes** (side by side): NZD Cost to Customer + Yen Total
@@ -102,8 +102,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 
 ## Yen Rate
 - Mid rate fetched live from `open.er-api.com`
-- **Live rate** = API mid rate + Live Rate Adjustment (default -0.80, configurable in Variables)
-- **Customer rate** = adjusted live rate - 0.70 (margin hardcoded)
+- **Estimated Spot Buy rate** = API mid rate + Live Rate Adjustment (default -0.80, configurable in Variables)
+- **Customer rate** = Estimated Spot Buy rate - 0.70 (margin hardcoded)
 - Both rates displayed at top of app
 
 ## localStorage Keys
