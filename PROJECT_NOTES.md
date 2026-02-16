@@ -46,13 +46,14 @@ All costs are GST-exempt and configurable via the Variables panel.
 |---|---|
 | Brokerage | $575 |
 | Freight | $2,262 |
+| Marine Insurance GST | $110 |
 | Statement of Compliance | $390 |
 | Compliance (European) | $1,900 |
 | Compliance (Other) | $1,100 |
 | Heat Treatment | $225 |
 
 ### Conditional Logic
-- **Brokerage & Freight**: Always applied automatically
+- **Brokerage, Freight & Marine Insurance GST**: Always applied automatically
 - **European?** (Y/N toggle): Controls what options appear
 - **Statement of Compliance?**: Only shown if European = Yes. Subtracts $390
 - **Compliance?**: If European + Yes → $1,900; if Not European + Yes → $1,100
@@ -77,7 +78,7 @@ All costs are GST-exempt and configurable via the Variables panel.
    - Input currency box is dimmed/dashed
    - Output currency box is highlighted/scaled up
    - Swap automatically when direction toggles
-6. **Auto deductions**: Brokerage and Freight (always on)
+6. **Auto deductions**: Brokerage, Freight, and Marine Insurance GST (always on)
 7. **Options toggles**: European, SoC, Compliance, Heat Treatment
 8. **Breakdown**: Full step-by-step calculation (dynamic, changes with direction)
 9. **Status**: Rate update timestamp
@@ -117,7 +118,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 2f** (2026-02-15): Renamed to FOB Calculator, upgraded Variables panel with localStorage persistence, table layout, and "Save as New Defaults" feature
 - **Phase 2g** (2026-02-15): Rounded all NZD figures to zero decimal places
 - **Phase 3** (2026-02-15): Deployed to GitHub Pages
-- **Phase 3b** (2026-02-15): Added custom Apple Touch Icon for iPhone home screen - CURRENT
+- **Phase 3b** (2026-02-15): Added custom Apple Touch Icon for iPhone home screen
+- **Phase 3c** (2026-02-16): Added Marine Insurance GST ($110) as always-on auto deduction - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
