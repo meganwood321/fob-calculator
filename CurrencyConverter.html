@@ -471,6 +471,10 @@
             <div class="settings-title">Variable Costs</div>
             <table class="settings-table">
                 <tr>
+                    <td>Live Rate Adjustment</td>
+                    <td><input type="number" id="setCost_rateAdjust" step="any"></td>
+                </tr>
+                <tr>
                     <td>Brokerage</td>
                     <td><input type="number" id="setCost_brokerage" min="0" step="any"></td>
                 </tr>
@@ -621,6 +625,7 @@
     <script>
         // --- Default values ---
         const DEFAULTS = {
+            rateAdjust: -0.80,
             brokerage: 575,
             freight: 2262,
             marineInsGst: 110,
@@ -648,6 +653,7 @@
         const savedMsg = document.getElementById('savedMsg');
 
         const setCost = {
+            rateAdjust: document.getElementById('setCost_rateAdjust'),
             brokerage: document.getElementById('setCost_brokerage'),
             freight: document.getElementById('setCost_freight'),
             marineInsGst: document.getElementById('setCost_marineInsGst'),
@@ -660,6 +666,14 @@
         let liveYenRate = null;
         const YEN_MARGIN = 0.70;
 
+        function getRateAdjust() {
+            return parseFloat(setCost.rateAdjust.value) || 0;
+        }
+
+        function getAdjustedLiveRate() {
+            return liveYenRate ? (liveYenRate + getRateAdjust()) : null;
+        }
+
         // --- LocalStorage: load/save ---
         function loadCosts() {
             let saved = null;
@@ -669,6 +683,7 @@
 
             const values = saved || DEFAULTS;
 
+            setCost.rateAdjust.value = values.rateAdjust !== undefined ? values.rateAdjust : DEFAULTS.rateAdjust;
             setCost.brokerage.value = values.brokerage;
             setCost.freight.value = values.freight;
             setCost.marineInsGst.value = values.marineInsGst !== undefined ? values.marineInsGst : DEFAULTS.marineInsGst;
@@ -680,6 +695,7 @@
 
         function saveCosts() {
             const data = {
+                rateAdjust: parseFloat(setCost.rateAdjust.value) || 0,
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
                 freight: parseFloat(setCost.freight.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
@@ -705,6 +721,7 @@
 
         function resetToDefaults() {
             const defs = getDefaults();
+            setCost.rateAdjust.value = defs.rateAdjust !== undefined ? defs.rateAdjust : DEFAULTS.rateAdjust;
             setCost.brokerage.value = defs.brokerage;
             setCost.freight.value = defs.freight;
             setCost.marineInsGst.value = defs.marineInsGst !== undefined ? defs.marineInsGst : DEFAULTS.marineInsGst;
@@ -718,6 +735,7 @@
 
         function saveAsDefaults() {
             const data = {
+                rateAdjust: parseFloat(setCost.rateAdjust.value) || 0,
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
                 freight: parseFloat(setCost.freight.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
@@ -742,8 +760,7 @@
                 const data = await res.json();
                 if (data.result === 'success') {
                     liveYenRate = data.rates.JPY;
-                    rateDisplay.textContent = liveYenRate.toFixed(2);
-                    custRateDisplay.textContent = (liveYenRate - YEN_MARGIN).toFixed(2);
+                    updateRateDisplay();
                     statusEl.textContent = 'Rate updated: ' + new Date().toLocaleString();
                     statusEl.classList.remove('error');
                     calculate();
@@ -753,11 +770,18 @@
             } catch (err) {
                 if (!liveYenRate) {
                     liveYenRate = 90.0;
-                    rateDisplay.textContent = liveYenRate.toFixed(2) + ' (offline)';
-                    custRateDisplay.textContent = (liveYenRate - YEN_MARGIN).toFixed(2);
+                    updateRateDisplay('(offline)');
                 }
                 statusEl.textContent = 'Could not fetch live rate. Using fallback.';
                 statusEl.classList.add('error');
+            }
+        }
+
+        function updateRateDisplay(suffix) {
+            const adjusted = getAdjustedLiveRate();
+            if (adjusted !== null) {
+                rateDisplay.textContent = adjusted.toFixed(2) + (suffix ? ' ' + suffix : '');
+                custRateDisplay.textContent = (adjusted - YEN_MARGIN).toFixed(2);
             }
         }
 
@@ -815,7 +839,9 @@
             const isSoC = toggleSoC.checked;
             const isCompliance = toggleCompliance.checked;
             const isHeat = toggleHeat.checked;
-            const customerRate = liveYenRate ? (liveYenRate - YEN_MARGIN) : 0;
+            const adjustedRate = getAdjustedLiveRate();
+            const customerRate = adjustedRate ? (adjustedRate - YEN_MARGIN) : 0;
+            updateRateDisplay();
 
             const fixedCosts = getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat);
             const costItems = getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat);
