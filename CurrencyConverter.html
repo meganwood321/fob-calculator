@@ -479,6 +479,10 @@
                     <td><input type="number" id="setCost_freight" min="0" step="any"></td>
                 </tr>
                 <tr>
+                    <td>Marine Insurance GST</td>
+                    <td><input type="number" id="setCost_marineInsGst" min="0" step="any"></td>
+                </tr>
+                <tr>
                     <td>Statement of Compliance</td>
                     <td><input type="number" id="setCost_soc" min="0" step="any"></td>
                 </tr>
@@ -553,6 +557,13 @@
             </div>
             <span style="color: #2ecc71; font-size: 0.8rem;">AUTO</span>
         </div>
+        <div class="toggle-row" style="cursor: default;">
+            <div>
+                <div class="label-text">Marine Insurance GST</div>
+                <div class="label-cost" id="marineInsGstLabel">$110.00</div>
+            </div>
+            <span style="color: #2ecc71; font-size: 0.8rem;">AUTO</span>
+        </div>
 
         <hr class="divider">
 
@@ -612,6 +623,7 @@
         const DEFAULTS = {
             brokerage: 575,
             freight: 2262,
+            marineInsGst: 110,
             soc: 390,
             compEuro: 1900,
             compOther: 1100,
@@ -638,6 +650,7 @@
         const setCost = {
             brokerage: document.getElementById('setCost_brokerage'),
             freight: document.getElementById('setCost_freight'),
+            marineInsGst: document.getElementById('setCost_marineInsGst'),
             soc: document.getElementById('setCost_soc'),
             compEuro: document.getElementById('setCost_compEuro'),
             compOther: document.getElementById('setCost_compOther'),
@@ -658,6 +671,7 @@
 
             setCost.brokerage.value = values.brokerage;
             setCost.freight.value = values.freight;
+            setCost.marineInsGst.value = values.marineInsGst !== undefined ? values.marineInsGst : DEFAULTS.marineInsGst;
             setCost.soc.value = values.soc;
             setCost.compEuro.value = values.compEuro;
             setCost.compOther.value = values.compOther;
@@ -668,6 +682,7 @@
             const data = {
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
                 freight: parseFloat(setCost.freight.value) || 0,
+                marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
                 compOther: parseFloat(setCost.compOther.value) || 0,
@@ -692,6 +707,7 @@
             const defs = getDefaults();
             setCost.brokerage.value = defs.brokerage;
             setCost.freight.value = defs.freight;
+            setCost.marineInsGst.value = defs.marineInsGst !== undefined ? defs.marineInsGst : DEFAULTS.marineInsGst;
             setCost.soc.value = defs.soc;
             setCost.compEuro.value = defs.compEuro;
             setCost.compOther.value = defs.compOther;
@@ -704,6 +720,7 @@
             const data = {
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
                 freight: parseFloat(setCost.freight.value) || 0,
+                marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
                 compOther: parseFloat(setCost.compOther.value) || 0,
@@ -748,6 +765,7 @@
             return {
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
                 freight: parseFloat(setCost.freight.value) || 0,
+                marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
                 compOther: parseFloat(setCost.compOther.value) || 0,
@@ -765,7 +783,7 @@
         }
 
         function getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat) {
-            let total = costs.brokerage + costs.freight;
+            let total = costs.brokerage + costs.freight + costs.marineInsGst;
             if (isEuropean && isSoC) total += costs.soc;
             if (isCompliance) total += isEuropean ? costs.compEuro : costs.compOther;
             if (isHeat) total += costs.heat;
@@ -775,7 +793,8 @@
         function getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat) {
             const items = [
                 { label: 'Brokerage', amount: costs.brokerage },
-                { label: 'Freight', amount: costs.freight }
+                { label: 'Freight', amount: costs.freight },
+                { label: 'Marine Insurance GST', amount: costs.marineInsGst }
             ];
             if (isEuropean && isSoC) items.push({ label: 'Statement of Compliance', amount: costs.soc });
             if (isCompliance) {
@@ -846,6 +865,7 @@
 
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
             document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
+            document.getElementById('marineInsGstLabel').textContent = fmtNZD(costs.marineInsGst);
             document.getElementById('socLabel').textContent = fmtNZD(costs.soc);
             document.getElementById('heatLabel').textContent = fmtNZD(costs.heat);
             document.getElementById('complianceLabel').textContent = isEuropean
