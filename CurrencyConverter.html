@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOB Calculator</title>
+    <title>Jason's Calculator</title>
     <link rel="apple-touch-icon" href="$ → ¥.png">
     <link rel="icon" type="image/png" href="$ → ¥.png">
     <style>
@@ -509,7 +509,7 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>FOB Calculator</h1>
+            <h1>Jason's Calculator</h1>
             <button class="settings-btn" id="settingsBtn">&#9881; Variables</button>
         </div>
         <div class="rate-info">
@@ -588,7 +588,7 @@
                 <div class="result-sub">incl. all costs</div>
             </div>
             <div class="result-box yen" id="yenResultBox">
-                <div class="result-label">Yen Total</div>
+                <div class="result-label">FOB</div>
                 <div class="result-value" id="totalJPY">&yen;0</div>
                 <div class="result-sub" id="yenRateSub">@ 0.00/NZD</div>
             </div>
@@ -1010,7 +1010,7 @@
                 breakdownHTML += brkRow('- GST (3/23 = 15%)', '-' + fmtNZD(gst), 'deduction');
                 breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
                 breakdownHTML += brkRow('&times; Customer Rate (' + customerRate.toFixed(2) + ')', '');
-                breakdownHTML += brkRow('Yen Total', fmtJPY(yenTotal), 'total');
+                breakdownHTML += brkRow('FOB', fmtJPY(yenTotal), 'total');
             }
 
             // --- Car Cost calculation (in yen) ---
@@ -1029,7 +1029,7 @@
             // Add to breakdown
             breakdownHTML += brkRow('', '');
             breakdownHTML += brkRow('<strong>Car Cost Calculation</strong>', '');
-            breakdownHTML += brkRow('Yen Total (FOB)', fmtJPY(yenTotal));
+            breakdownHTML += brkRow('FOB', fmtJPY(yenTotal));
             breakdownHTML += brkRow('- Agent Fee (' + agent + ')', '-' + fmtJPY(agentFeeYen), 'deduction');
             breakdownHTML += brkRow('Car Cost', fmtJPY(carCostYen), 'total');
 
