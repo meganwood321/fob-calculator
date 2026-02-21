@@ -437,6 +437,57 @@
 
         .settings-saved.show { opacity: 1; }
 
+        /* Car Cost result */
+        .car-cost-section {
+            margin-top: 12px;
+        }
+
+        .car-cost-result {
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid rgba(46, 204, 113, 0.25);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .car-cost-result .result-value { color: #2ecc71; }
+
+        .car-cost-result .result-sub { color: #667; font-size: 0.75rem; margin-top: 4px; }
+
+        /* Agent dropdown */
+        .agent-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .agent-row .label-text {
+            font-size: 0.92rem;
+            color: #ccd;
+        }
+
+        .agent-select {
+            padding: 6px 10px;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #fff;
+            outline: none;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .agent-select:focus { border-color: #5dade2; }
+
+        .agent-select option { background: #1a1a2e; color: #fff; }
+
         /* Status */
         .status {
             text-align: center;
@@ -532,7 +583,7 @@
         <!-- Results -->
         <div class="results-grid">
             <div class="result-box" id="nzdResultBox">
-                <div class="result-label">NZD Cost to Customer</div>
+                <div class="result-label">FOB (NZD Cost to Customer)</div>
                 <div class="result-value" id="totalNZD">$0.00</div>
                 <div class="result-sub">incl. all costs</div>
             </div>
@@ -540,6 +591,25 @@
                 <div class="result-label">Yen Total</div>
                 <div class="result-value" id="totalJPY">&yen;0</div>
                 <div class="result-sub" id="yenRateSub">@ 0.00/NZD</div>
+            </div>
+        </div>
+
+        <!-- Car Cost Result -->
+        <div class="car-cost-section">
+            <div class="agent-row">
+                <div class="label-text">Agent</div>
+                <select class="agent-select" id="agentSelect">
+                    <option value="Nichibo">Nichibo</option>
+                    <option value="WEINS">WEINS</option>
+                    <option value="NTP">NTP</option>
+                    <option value="Autobacs">Autobacs</option>
+                    <option value="Gulliver">Gulliver</option>
+                </select>
+            </div>
+            <div class="car-cost-result">
+                <div class="result-label">Car Cost</div>
+                <div class="result-value" id="carCostNZD">$0</div>
+                <div class="result-sub" id="agentFeeSub">Agent fee: ¥0 (NZD $0)</div>
             </div>
         </div>
 
@@ -623,6 +693,64 @@
     </div>
 
     <script>
+        // --- Agent fee data (Oncharge agent fee in yen) ---
+        const AGENT_FEES = {
+            'Nichibo': [
+                { low: 1, high: 500000, fee: 88000 },
+                { low: 500001, high: 1000000, fee: 94000 },
+                { low: 1000001, high: 1500000, fee: 114000 },
+                { low: 1500001, high: 2000000, fee: 124000 },
+                { low: 2000001, high: 2500000, fee: 140000 },
+                { low: 2500001, high: 3000000, fee: 155000 },
+                { low: 3000001, high: 3500000, fee: 170000 },
+                { low: 3500001, high: 4000000, fee: 185000 },
+                { low: 4000001, high: 4500000, fee: 215000 },
+                { low: 4500001, high: 5000000, fee: 245000 },
+                { low: 5000001, high: 5500000, fee: 275000 },
+                { low: 5500001, high: 6000000, fee: 305000 },
+                { low: 6000001, high: 6500000, fee: 335000 },
+                { low: 6500001, high: 7000000, fee: 365000 },
+                { low: 7000001, high: 7500000, fee: 395000 },
+                { low: 7500001, high: 8000000, fee: 425000 },
+                { low: 8000001, high: 8500000, fee: 455000 },
+                { low: 8500001, high: 9000000, fee: 485000 },
+                { low: 9000001, high: 9500000, fee: 515000 },
+                { low: 9500001, high: 10000000, fee: 545000 },
+                { low: 10000001, high: 10500000, fee: 585000 },
+                { low: 10500001, high: 11000000, fee: 615000 },
+                { low: 11000001, high: 11500000, fee: 645000 },
+                { low: 11500001, high: 12000000, fee: 675000 },
+                { low: 12000001, high: 12500000, fee: 705000 },
+                { low: 12500001, high: 13000000, fee: 735000 },
+                { low: 13000001, high: 13500000, fee: 765000 },
+                { low: 13500001, high: 14000000, fee: 795000 }
+            ],
+            'WEINS': [
+                { low: 1, high: 14000000, fee: 112000 }
+            ],
+            'NTP': [
+                { low: 1, high: 14000000, fee: 112000 }
+            ],
+            'Autobacs': [
+                { low: 1, high: 14000000, fee: 112000 }
+            ],
+            'Gulliver': [
+                { low: 1, high: 14000000, fee: 112000 }
+            ]
+        };
+
+        function getAgentFee(agent, carCostYen) {
+            const tiers = AGENT_FEES[agent];
+            if (!tiers || carCostYen <= 0) return 0;
+            for (const tier of tiers) {
+                if (carCostYen >= tier.low && carCostYen <= tier.high) {
+                    return tier.fee;
+                }
+            }
+            // If above max tier, use highest tier fee
+            return tiers[tiers.length - 1].fee;
+        }
+
         // --- Default values ---
         const DEFAULTS = {
             rateAdjust: -0.80,
@@ -885,11 +1013,29 @@
                 breakdownHTML += brkRow('Yen Total', fmtJPY(yenTotal), 'total');
             }
 
+            // --- Car Cost calculation ---
+            const agent = document.getElementById('agentSelect').value;
+            const agentFeeYen = getAgentFee(agent, yenTotal);
+            const agentFeeNZD = customerRate ? (agentFeeYen / customerRate) : 0;
+            const carCostNZD = nzdCostToCustomer - agentFeeNZD;
+
+            // Add agent fee to breakdown
+            breakdownHTML += brkRow('', '');
+            breakdownHTML += brkRow('<strong>Car Cost Calculation</strong>', '');
+            breakdownHTML += brkRow('FOB (NZD Cost to Customer)', fmtNZD(nzdCostToCustomer));
+            breakdownHTML += brkRow('- Agent Fee (' + agent + ')', '-' + fmtNZD(agentFeeNZD), 'deduction');
+            breakdownHTML += brkRow('&nbsp;&nbsp;(' + fmtJPY(agentFeeYen) + ' &divide; ' + customerRate.toFixed(2) + ')', '');
+            breakdownHTML += brkRow('Car Cost', fmtNZD(carCostNZD), 'total');
+
             breakdownEl.innerHTML = breakdownHTML;
 
             document.getElementById('totalNZD').textContent = fmtNZD(nzdCostToCustomer);
             document.getElementById('totalJPY').textContent = fmtJPY(yenTotal);
             document.getElementById('yenRateSub').textContent = '@ ' + customerRate.toFixed(2) + '/NZD';
+
+            // Car Cost display
+            document.getElementById('carCostNZD').textContent = fmtNZD(carCostNZD);
+            document.getElementById('agentFeeSub').textContent = 'Agent fee: ' + fmtJPY(agentFeeYen) + ' (' + fmtNZD(Math.round(agentFeeNZD)) + ')';
 
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
             document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
@@ -956,6 +1102,7 @@
         toggleSoC.addEventListener('change', calculate);
         toggleCompliance.addEventListener('change', calculate);
         toggleHeat.addEventListener('change', calculate);
+        document.getElementById('agentSelect').addEventListener('change', calculate);
 
         // Settings inputs: save + recalculate on every change
         Object.values(setCost).forEach(function(input) {
