@@ -1135,8 +1135,9 @@
 
         // --- Init ---
         loadCosts();
-        document.getElementById('nzdResultBox').classList.add('is-input');
-        document.getElementById('yenResultBox').classList.add('is-output');
+        // Default to Yen to NZD
+        directionToggle.checked = true;
+        directionToggle.dispatchEvent(new Event('change'));
         fetchRate();
         setInterval(fetchRate, 30 * 60 * 1000);
     </script>
