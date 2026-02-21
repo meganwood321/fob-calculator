@@ -1070,7 +1070,7 @@
             const yenBox = document.getElementById('yenResultBox');
 
             if (isYenToNZD) {
-                document.getElementById('inputSectionLabel').textContent = 'Input - Yen Amount';
+                document.getElementById('inputSectionLabel').textContent = 'Input - Yen FOB';
                 document.getElementById('inputPrefix').textContent = '\u00A5';
                 amountInput.placeholder = '0';
                 document.getElementById('costsSectionLabel').textContent = 'Additions (all GST-exempt)';
@@ -1079,7 +1079,7 @@
                 nzdBox.classList.add('is-output');
                 nzdBox.classList.remove('is-input');
             } else {
-                document.getElementById('inputSectionLabel').textContent = 'Input - NZD Cost to Customer';
+                document.getElementById('inputSectionLabel').textContent = 'Input - NZD Cost to Client';
                 document.getElementById('inputPrefix').textContent = '$';
                 amountInput.placeholder = '0.00';
                 document.getElementById('costsSectionLabel').textContent = 'Deductions (all GST-exempt)';
