@@ -588,7 +588,7 @@
                 <div class="result-sub">incl. all costs</div>
             </div>
             <div class="result-box yen" id="yenResultBox">
-                <div class="result-label">Yen Total</div>
+                <div class="result-label">FOB (Yen)</div>
                 <div class="result-value" id="totalJPY">&yen;0</div>
                 <div class="result-sub" id="yenRateSub">@ 0.00/NZD</div>
             </div>
@@ -1010,25 +1010,28 @@
                 breakdownHTML += brkRow('- GST (3/23 = 15%)', '-' + fmtNZD(gst), 'deduction');
                 breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
                 breakdownHTML += brkRow('&times; Customer Rate (' + customerRate.toFixed(2) + ')', '');
-                breakdownHTML += brkRow('Yen Total', fmtJPY(yenTotal), 'total');
+                breakdownHTML += brkRow('Car Cost (Yen)', fmtJPY(yenTotal), 'total');
             }
 
-            // --- Car Cost calculation (in yen) ---
+            // --- Car Cost & FOB calculation (in yen) ---
+            // Car Cost = NZD base x customer rate (= yenTotal)
+            // FOB = Car Cost + Agent Fee
             const agent = document.getElementById('agentSelect').value;
-            const agentFeeYen = getAgentFee(agent, yenTotal);
-            const carCostYen = yenTotal - agentFeeYen;
+            const carCostYen = yenTotal;
+            const agentFeeYen = getAgentFee(agent, carCostYen);
+            const fobYen = carCostYen + agentFeeYen;
 
-            // Add agent fee to breakdown
+            // Add to breakdown
             breakdownHTML += brkRow('', '');
-            breakdownHTML += brkRow('<strong>Car Cost Calculation</strong>', '');
-            breakdownHTML += brkRow('Yen Total', fmtJPY(yenTotal));
-            breakdownHTML += brkRow('- Agent Fee (' + agent + ')', '-' + fmtJPY(agentFeeYen), 'deduction');
-            breakdownHTML += brkRow('Car Cost', fmtJPY(carCostYen), 'total');
+            breakdownHTML += brkRow('<strong>FOB Calculation</strong>', '');
+            breakdownHTML += brkRow('Car Cost', fmtJPY(carCostYen));
+            breakdownHTML += brkRow('+ Agent Fee (' + agent + ')', '+' + fmtJPY(agentFeeYen), 'addition');
+            breakdownHTML += brkRow('FOB', fmtJPY(fobYen), 'total');
 
             breakdownEl.innerHTML = breakdownHTML;
 
             document.getElementById('totalNZD').textContent = fmtNZD(nzdCostToCustomer);
-            document.getElementById('totalJPY').textContent = fmtJPY(yenTotal);
+            document.getElementById('totalJPY').textContent = fmtJPY(fobYen);
             document.getElementById('yenRateSub').textContent = '@ ' + customerRate.toFixed(2) + '/NZD';
 
             // Car Cost display
