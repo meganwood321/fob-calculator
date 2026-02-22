@@ -610,6 +610,7 @@
                 <div class="result-label">Car Cost</div>
                 <div class="result-value" id="carCostYen">&yen;0</div>
                 <div class="result-sub" id="agentFeeSub">Agent fee: ¥0</div>
+                <div class="result-sub" id="marginDisplay" style="color: #2ecc71;">Margin: $0</div>
             </div>
         </div>
 
@@ -693,63 +694,75 @@
     </div>
 
     <script>
-        // --- Agent fee data (Oncharge agent fee in yen) ---
+        // --- Agent fee data (fee = oncharge, margin = oncharge - actual agent fee) ---
         const AGENT_FEES = {
             'Nichibo': [
-                { low: 1, high: 500000, fee: 88000 },
-                { low: 500001, high: 1000000, fee: 94000 },
-                { low: 1000001, high: 1500000, fee: 114000 },
-                { low: 1500001, high: 2000000, fee: 124000 },
-                { low: 2000001, high: 2500000, fee: 140000 },
-                { low: 2500001, high: 3000000, fee: 155000 },
-                { low: 3000001, high: 3500000, fee: 170000 },
-                { low: 3500001, high: 4000000, fee: 185000 },
-                { low: 4000001, high: 4500000, fee: 215000 },
-                { low: 4500001, high: 5000000, fee: 245000 },
-                { low: 5000001, high: 5500000, fee: 275000 },
-                { low: 5500001, high: 6000000, fee: 305000 },
-                { low: 6000001, high: 6500000, fee: 335000 },
-                { low: 6500001, high: 7000000, fee: 365000 },
-                { low: 7000001, high: 7500000, fee: 395000 },
-                { low: 7500001, high: 8000000, fee: 425000 },
-                { low: 8000001, high: 8500000, fee: 455000 },
-                { low: 8500001, high: 9000000, fee: 485000 },
-                { low: 9000001, high: 9500000, fee: 515000 },
-                { low: 9500001, high: 10000000, fee: 545000 },
-                { low: 10000001, high: 10500000, fee: 585000 },
-                { low: 10500001, high: 11000000, fee: 615000 },
-                { low: 11000001, high: 11500000, fee: 645000 },
-                { low: 11500001, high: 12000000, fee: 675000 },
-                { low: 12000001, high: 12500000, fee: 705000 },
-                { low: 12500001, high: 13000000, fee: 735000 },
-                { low: 13000001, high: 13500000, fee: 765000 },
-                { low: 13500001, high: 14000000, fee: 795000 }
+                { low: 1, high: 500000, fee: 88000, margin: 26000 },
+                { low: 500001, high: 1000000, fee: 94000, margin: 29000 },
+                { low: 1000001, high: 1500000, fee: 114000, margin: 39000 },
+                { low: 1500001, high: 2000000, fee: 124000, margin: 42000 },
+                { low: 2000001, high: 2500000, fee: 140000, margin: 53000 },
+                { low: 2500001, high: 3000000, fee: 155000, margin: 60000 },
+                { low: 3000001, high: 3500000, fee: 170000, margin: 65000 },
+                { low: 3500001, high: 4000000, fee: 185000, margin: 70000 },
+                { low: 4000001, high: 4500000, fee: 215000, margin: 90000 },
+                { low: 4500001, high: 5000000, fee: 245000, margin: 120000 },
+                { low: 5000001, high: 5500000, fee: 275000, margin: 150000 },
+                { low: 5500001, high: 6000000, fee: 305000, margin: 180000 },
+                { low: 6000001, high: 6500000, fee: 335000, margin: 210000 },
+                { low: 6500001, high: 7000000, fee: 365000, margin: 240000 },
+                { low: 7000001, high: 7500000, fee: 395000, margin: 270000 },
+                { low: 7500001, high: 8000000, fee: 425000, margin: 300000 },
+                { low: 8000001, high: 8500000, fee: 455000, margin: 330000 },
+                { low: 8500001, high: 9000000, fee: 485000, margin: 360000 },
+                { low: 9000001, high: 9500000, fee: 515000, margin: 390000 },
+                { low: 9500001, high: 10000000, fee: 545000, margin: 420000 },
+                { low: 10000001, high: 10500000, fee: 585000, margin: 460000 },
+                { low: 10500001, high: 11000000, fee: 615000, margin: 490000 },
+                { low: 11000001, high: 11500000, fee: 645000, margin: 520000 },
+                { low: 11500001, high: 12000000, fee: 675000, margin: 550000 },
+                { low: 12000001, high: 12500000, fee: 705000, margin: 580000 },
+                { low: 12500001, high: 13000000, fee: 735000, margin: 610000 },
+                { low: 13000001, high: 13500000, fee: 765000, margin: 640000 },
+                { low: 13500001, high: 14000000, fee: 795000, margin: 670000 }
             ],
             'WEINS': [
-                { low: 1, high: 14000000, fee: 112000 }
+                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
             ],
             'NTP': [
-                { low: 1, high: 14000000, fee: 112000 }
+                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
             ],
             'Autobacs': [
-                { low: 1, high: 14000000, fee: 112000 }
+                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
             ],
             'Gulliver': [
-                { low: 1, high: 14000000, fee: 112000 }
+                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
             ]
         };
 
         function getAgentFee(agent, carCostYen) {
             const tiers = AGENT_FEES[agent];
-            if (!tiers || carCostYen <= 0) return 0;
+            if (!tiers || carCostYen <= 0) return { fee: 0, margin: 0 };
             for (const tier of tiers) {
                 if (carCostYen >= tier.low && carCostYen <= tier.high) {
-                    return tier.fee;
+                    return { fee: tier.fee, margin: tier.margin };
                 }
             }
-            // If above max tier, use highest tier fee
-            return tiers[tiers.length - 1].fee;
+            // If above max tier, use highest tier
+            const last = tiers[tiers.length - 1];
+            return { fee: last.fee, margin: last.margin };
         }
+
+        // --- Actual costs for variable items (for margin calculation) ---
+        const ACTUAL_COSTS = {
+            brokerage: 0,
+            freight: 1850,
+            marineInsGst: 110,
+            soc: 340,
+            compEuro: 1900,
+            compOther: 1100,
+            heat: 225
+        };
 
         // --- Default values ---
         const DEFAULTS = {
@@ -1019,12 +1032,36 @@
             const agent = document.getElementById('agentSelect').value;
             let carCostYen = yenTotal; // initial guess
             let agentFeeYen = 0;
+            let agentMarginYen = 0;
             for (let i = 0; i < 10; i++) {
-                agentFeeYen = getAgentFee(agent, carCostYen);
+                const result = getAgentFee(agent, carCostYen);
+                agentFeeYen = result.fee;
+                agentMarginYen = result.margin;
                 const newCarCost = yenTotal - agentFeeYen;
                 if (newCarCost === carCostYen) break;
                 carCostYen = newCarCost;
             }
+
+            // --- Margin calculation ---
+            // Part 1: Variable margins (charge - actual cost)
+            let variableMargin = (costs.brokerage - ACTUAL_COSTS.brokerage)
+                               + (costs.freight - ACTUAL_COSTS.freight)
+                               + (costs.marineInsGst - ACTUAL_COSTS.marineInsGst);
+            if (isEuropean && isSoC) variableMargin += (costs.soc - ACTUAL_COSTS.soc);
+            if (isCompliance) variableMargin += isEuropean
+                ? (costs.compEuro - ACTUAL_COSTS.compEuro)
+                : (costs.compOther - ACTUAL_COSTS.compOther);
+            if (isHeat) variableMargin += (costs.heat - ACTUAL_COSTS.heat);
+
+            // Part 2: Agent fee margin (yen → NZD)
+            const agentMarginNZD = customerRate ? (agentMarginYen / customerRate) : 0;
+
+            // Part 3: Rate markup on all FOB yen (estimated vs customer rate)
+            const rateMarkup = (adjustedRate && customerRate)
+                ? yenTotal * YEN_MARGIN / (customerRate * adjustedRate)
+                : 0;
+
+            const totalMargin = variableMargin + agentMarginNZD + rateMarkup;
 
             // Add to breakdown
             breakdownHTML += brkRow('', '');
@@ -1042,6 +1079,9 @@
             // Car Cost display
             document.getElementById('carCostYen').textContent = fmtJPY(carCostYen);
             document.getElementById('agentFeeSub').textContent = 'Agent fee: ' + fmtJPY(agentFeeYen);
+
+            // Margin display
+            document.getElementById('marginDisplay').textContent = 'Margin: ' + fmtNZD(totalMargin);
 
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
             document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
