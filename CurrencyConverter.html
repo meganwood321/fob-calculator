@@ -610,7 +610,10 @@
                 <div class="result-label">Car Cost</div>
                 <div class="result-value" id="carCostYen">&yen;0</div>
                 <div class="result-sub" id="agentFeeSub">Agent fee: ¥0</div>
-                <div class="result-sub" id="marginDisplay" style="color: #2ecc71;">Margin: $0</div>
+            </div>
+            <div class="car-cost-result" style="margin-top: 10px; background: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.25);">
+                <div class="result-label">Margin</div>
+                <div class="result-value" id="marginDisplay" style="color: #2ecc71;">$0</div>
             </div>
         </div>
 
@@ -1081,7 +1084,7 @@
             document.getElementById('agentFeeSub').textContent = 'Agent fee: ' + fmtJPY(agentFeeYen);
 
             // Margin display
-            document.getElementById('marginDisplay').textContent = 'Margin: ' + fmtNZD(totalMargin);
+            document.getElementById('marginDisplay').textContent = fmtNZD(totalMargin);
 
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
             document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
