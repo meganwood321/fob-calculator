@@ -488,6 +488,50 @@
 
         .agent-select option { background: #1a1a2e; color: #fff; }
 
+        /* Margin breakdown */
+        .margin-info-btn {
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 6px;
+            padding: 2px 8px;
+            color: #2ecc71;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 8px;
+        }
+
+        .margin-info-btn:hover {
+            background: rgba(46, 204, 113, 0.25);
+        }
+
+        .margin-breakdown {
+            display: none;
+            margin-top: 10px;
+            padding: 14px 16px;
+            background: rgba(46, 204, 113, 0.05);
+            border: 1px solid rgba(46, 204, 113, 0.15);
+            border-radius: 12px;
+        }
+
+        .margin-breakdown.open { display: block; }
+
+        .margin-breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.82rem;
+            color: #99aabb;
+        }
+
+        .margin-breakdown-row.margin-total {
+            border-top: 1px solid rgba(46, 204, 113, 0.2);
+            margin-top: 6px;
+            padding-top: 10px;
+            font-weight: 700;
+            color: #2ecc71;
+        }
+
         /* Status */
         .status {
             text-align: center;
@@ -612,9 +656,10 @@
                 <div class="result-sub" id="agentFeeSub">Agent fee: ¥0</div>
             </div>
             <div class="agent-row" style="margin-top: 10px; justify-content: space-between;">
-                <div class="label-text">Margin</div>
+                <div class="label-text">Margin <button class="margin-info-btn" id="marginInfoBtn">Breakdown</button></div>
                 <div id="marginDisplay" style="color: #2ecc71; font-size: 0.85rem;">$0</div>
             </div>
+            <div class="margin-breakdown" id="marginBreakdown"></div>
         </div>
 
         <hr class="divider">
@@ -1086,6 +1131,32 @@
             // Margin display
             document.getElementById('marginDisplay').textContent = fmtNZD(totalMargin);
 
+            // Margin breakdown detail
+            let mbHTML = '';
+            mbHTML += '<div class="margin-breakdown-row"><span><strong>Variable Margins</strong></span><span></span></div>';
+            mbHTML += mbRow('Brokerage (' + fmtNZD(costs.brokerage) + ' − ' + fmtNZD(ACTUAL_COSTS.brokerage) + ')', fmtNZD(costs.brokerage - ACTUAL_COSTS.brokerage));
+            mbHTML += mbRow('Freight (' + fmtNZD(costs.freight) + ' − ' + fmtNZD(ACTUAL_COSTS.freight) + ')', fmtNZD(costs.freight - ACTUAL_COSTS.freight));
+            mbHTML += mbRow('Marine Ins (' + fmtNZD(costs.marineInsGst) + ' − ' + fmtNZD(ACTUAL_COSTS.marineInsGst) + ')', fmtNZD(costs.marineInsGst - ACTUAL_COSTS.marineInsGst));
+            if (isEuropean && isSoC) mbHTML += mbRow('SoC (' + fmtNZD(costs.soc) + ' − ' + fmtNZD(ACTUAL_COSTS.soc) + ')', fmtNZD(costs.soc - ACTUAL_COSTS.soc));
+            if (isCompliance) {
+                if (isEuropean) {
+                    mbHTML += mbRow('Compliance Euro (' + fmtNZD(costs.compEuro) + ' − ' + fmtNZD(ACTUAL_COSTS.compEuro) + ')', fmtNZD(costs.compEuro - ACTUAL_COSTS.compEuro));
+                } else {
+                    mbHTML += mbRow('Compliance Other (' + fmtNZD(costs.compOther) + ' − ' + fmtNZD(ACTUAL_COSTS.compOther) + ')', fmtNZD(costs.compOther - ACTUAL_COSTS.compOther));
+                }
+            }
+            if (isHeat) mbHTML += mbRow('Heat Treatment (' + fmtNZD(costs.heat) + ' − ' + fmtNZD(ACTUAL_COSTS.heat) + ')', fmtNZD(costs.heat - ACTUAL_COSTS.heat));
+            mbHTML += mbRow('Subtotal', fmtNZD(variableMargin), 'margin-total');
+
+            mbHTML += '<div class="margin-breakdown-row" style="margin-top:8px"><span><strong>Agent Fee Margin</strong></span><span></span></div>';
+            mbHTML += mbRow('Agent margin: ' + fmtJPY(agentMarginYen) + ' ÷ ' + customerRate.toFixed(2), fmtNZD(agentMarginNZD));
+
+            mbHTML += '<div class="margin-breakdown-row" style="margin-top:8px"><span><strong>Rate Markup</strong></span><span></span></div>';
+            mbHTML += mbRow('FOB ' + fmtJPY(yenTotal) + ' × ' + YEN_MARGIN.toFixed(2) + ' ÷ (' + customerRate.toFixed(2) + ' × ' + (adjustedRate ? adjustedRate.toFixed(2) : '0') + ')', fmtNZD(rateMarkup));
+
+            mbHTML += mbRow('Total Margin', fmtNZD(totalMargin), 'margin-total');
+            document.getElementById('marginBreakdown').innerHTML = mbHTML;
+
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
             document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
             document.getElementById('marineInsGstLabel').textContent = fmtNZD(costs.marineInsGst);
@@ -1099,6 +1170,11 @@
         function brkRow(label, value, cls) {
             const className = cls ? ' ' + cls : '';
             return '<div class="breakdown-row' + className + '"><span>' + label + '</span><span>' + value + '</span></div>';
+        }
+
+        function mbRow(label, value, cls) {
+            const className = cls ? ' ' + cls : '';
+            return '<div class="margin-breakdown-row' + className + '"><span>' + label + '</span><span>' + value + '</span></div>';
         }
 
         // --- Direction toggle ---
@@ -1163,6 +1239,12 @@
                 saveCosts();
                 calculate();
             });
+        });
+
+        // Margin breakdown toggle
+        document.getElementById('marginInfoBtn').addEventListener('click', function() {
+            document.getElementById('marginBreakdown').classList.toggle('open');
+            this.textContent = document.getElementById('marginBreakdown').classList.contains('open') ? 'Hide' : 'Breakdown';
         });
 
         // Settings panel toggle

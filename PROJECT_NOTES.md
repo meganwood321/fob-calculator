@@ -119,7 +119,8 @@ All costs are GST-exempt and configurable via the Variables panel.
    - Output currency box is highlighted/scaled up
 6. **Agent dropdown**: Nichibo, WEINS, NTP, Autobacs, Gulliver
 7. **Car Cost box**: Car Cost in yen with agent fee subtitle
-8. **Margin row**: Total margin in NZD (green text)
+8. **Margin row**: Total margin in NZD (green text) + "Breakdown" button
+   - Toggles collapsible panel showing all 3 margin parts with formulas
 9. **Options toggles**: European, SoC, Compliance, Heat Treatment
 10. **Auto deductions**: Brokerage, Freight, and Marine Insurance GST (always on)
 11. **Breakdown**: Full step-by-step calculation including Car Cost section
@@ -170,7 +171,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 4c** (2026-02-22): Added Margin calculation (variable margins + agent margin + rate markup)
 - **Phase 4d** (2026-02-22): Default to Yen to NZD on load, updated input labels (NZD Cost to Client / Yen FOB)
 - **Phase 4e** (2026-02-22): Styled margin as matching agent-row
-- **Phase 4f** (2026-02-22): Moved Options section above Deductions section - CURRENT
+- **Phase 4f** (2026-02-22): Moved Options section above Deductions section
+- **Phase 4g** (2026-02-23): Added Margin breakdown toggle button with detailed 3-part breakdown panel - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
