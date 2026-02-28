@@ -620,7 +620,7 @@
         <div class="input-group">
             <div class="input-wrapper">
                 <span class="prefix" id="inputPrefix">$</span>
-                <input type="number" id="amountInput" placeholder="0.00" min="0" step="any">
+                <input type="text" id="amountInput" placeholder="0.00" inputmode="decimal" autocomplete="off">
             </div>
         </div>
 
@@ -801,24 +801,32 @@
             return { fee: last.fee, margin: last.margin };
         }
 
+        // --- Agent-specific freight charges ---
+        const AGENT_FREIGHT = {
+            'Nichibo':  { costToCustomer: 2041, costToSBL: 1540 },
+            'WEINS':    { costToCustomer: 2262, costToSBL: 1850 },
+            'NTP':      { costToCustomer: 2262, costToSBL: 1850 },
+            'Autobacs': { costToCustomer: 2262, costToSBL: 1850 },
+            'Gulliver': { costToCustomer: 2262, costToSBL: 1850 }
+        };
+
         // --- Actual costs for variable items (for margin calculation) ---
         const ACTUAL_COSTS = {
             brokerage: 0,
-            freight: 1850,
             marineInsGst: 110,
-            soc: 340,
+            soc: 390,
             compEuro: 1900,
             compOther: 1100,
             heat: 225
         };
 
-        // --- Default values ---
+        // --- Default values (Cost to Customer) ---
         const DEFAULTS = {
             rateAdjust: -0.80,
             brokerage: 575,
             freight: 2262,
             marineInsGst: 110,
-            soc: 390,
+            soc: 440,
             compEuro: 1900,
             compOther: 1100,
             heat: 225
@@ -1024,8 +1032,9 @@
         // --- Main calculation ---
         function calculate() {
             const costs = getCosts();
-            const inputAmount = parseFloat(amountInput.value) || 0;
+            const rawInput = parseInputValue();
             const isYenToNZD = directionToggle.checked;
+            const inputAmount = isYenToNZD ? rawInput * 1000 : rawInput;
             const isEuropean = toggleEuropean.checked;
             const isSoC = toggleSoC.checked;
             const isCompliance = toggleCompliance.checked;
@@ -1033,6 +1042,11 @@
             const adjustedRate = getAdjustedLiveRate();
             const customerRate = adjustedRate ? (adjustedRate - YEN_MARGIN) : 0;
             updateRateDisplay();
+
+            // Override freight with agent-specific value
+            const agent = document.getElementById('agentSelect').value;
+            const agentFreight = AGENT_FREIGHT[agent] || AGENT_FREIGHT['WEINS'];
+            costs.freight = agentFreight.costToCustomer;
 
             const fixedCosts = getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat);
             const costItems = getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat);
@@ -1077,7 +1091,6 @@
             // --- Car Cost calculation (in yen) ---
             // Car Cost = FOB (yenTotal) - Agent Fee
             // Agent fee depends on Car Cost → solve iteratively for Nichibo
-            const agent = document.getElementById('agentSelect').value;
             let carCostYen = yenTotal; // initial guess
             let agentFeeYen = 0;
             let agentMarginYen = 0;
@@ -1093,7 +1106,7 @@
             // --- Margin calculation ---
             // Part 1: Variable margins (charge - actual cost)
             let variableMargin = (costs.brokerage - ACTUAL_COSTS.brokerage)
-                               + (costs.freight - ACTUAL_COSTS.freight)
+                               + (costs.freight - agentFreight.costToSBL)
                                + (costs.marineInsGst - ACTUAL_COSTS.marineInsGst);
             if (isEuropean && isSoC) variableMargin += (costs.soc - ACTUAL_COSTS.soc);
             if (isCompliance) variableMargin += isEuropean
@@ -1135,7 +1148,7 @@
             let mbHTML = '';
             mbHTML += '<div class="margin-breakdown-row"><span><strong>Variable Margins</strong></span><span></span></div>';
             mbHTML += mbRow('Brokerage (' + fmtNZD(costs.brokerage) + ' − ' + fmtNZD(ACTUAL_COSTS.brokerage) + ')', fmtNZD(costs.brokerage - ACTUAL_COSTS.brokerage));
-            mbHTML += mbRow('Freight (' + fmtNZD(costs.freight) + ' − ' + fmtNZD(ACTUAL_COSTS.freight) + ')', fmtNZD(costs.freight - ACTUAL_COSTS.freight));
+            mbHTML += mbRow('Freight (' + fmtNZD(costs.freight) + ' − ' + fmtNZD(agentFreight.costToSBL) + ')', fmtNZD(costs.freight - agentFreight.costToSBL));
             mbHTML += mbRow('Marine Ins (' + fmtNZD(costs.marineInsGst) + ' − ' + fmtNZD(ACTUAL_COSTS.marineInsGst) + ')', fmtNZD(costs.marineInsGst - ACTUAL_COSTS.marineInsGst));
             if (isEuropean && isSoC) mbHTML += mbRow('SoC (' + fmtNZD(costs.soc) + ' − ' + fmtNZD(ACTUAL_COSTS.soc) + ')', fmtNZD(costs.soc - ACTUAL_COSTS.soc));
             if (isCompliance) {
@@ -1158,7 +1171,7 @@
             document.getElementById('marginBreakdown').innerHTML = mbHTML;
 
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
-            document.getElementById('freightLabel').textContent = fmtNZD(costs.freight);
+            document.getElementById('freightLabel').textContent = fmtNZD(costs.freight) + ' (' + agent + ')';
             document.getElementById('marineInsGstLabel').textContent = fmtNZD(costs.marineInsGst);
             document.getElementById('socLabel').textContent = fmtNZD(costs.soc);
             document.getElementById('heatLabel').textContent = fmtNZD(costs.heat);
@@ -1189,9 +1202,9 @@
             const yenBox = document.getElementById('yenResultBox');
 
             if (isYenToNZD) {
-                document.getElementById('inputSectionLabel').textContent = 'Input - Yen FOB';
+                document.getElementById('inputSectionLabel').textContent = 'Input - Yen FOB (÷1000)';
                 document.getElementById('inputPrefix').textContent = '\u00A5';
-                amountInput.placeholder = '0';
+                amountInput.placeholder = '0 (e.g. 3500 = ¥3,500,000)';
                 document.getElementById('costsSectionLabel').textContent = 'Additions (all GST-exempt)';
                 yenBox.classList.add('is-input');
                 yenBox.classList.remove('is-output');
@@ -1222,8 +1235,37 @@
             calculate();
         });
 
+        // --- Input formatting with commas ---
+        function parseInputValue() {
+            return parseFloat(amountInput.value.replace(/,/g, '')) || 0;
+        }
+
+        function formatInputWithCommas() {
+            const cursorPos = amountInput.selectionStart;
+            const oldVal = amountInput.value;
+            const oldLen = oldVal.length;
+
+            // Strip non-numeric except dots and minus
+            let raw = oldVal.replace(/[^0-9.\-]/g, '');
+
+            // Split on decimal point
+            const parts = raw.split('.');
+            // Add commas to integer part
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const newVal = parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
+
+            amountInput.value = newVal;
+
+            // Adjust cursor position for added/removed commas
+            const lenDiff = newVal.length - oldLen;
+            amountInput.setSelectionRange(cursorPos + lenDiff, cursorPos + lenDiff);
+        }
+
         // --- Event listeners ---
-        amountInput.addEventListener('input', calculate);
+        amountInput.addEventListener('input', function() {
+            formatInputWithCommas();
+            calculate();
+        });
         toggleSoC.addEventListener('change', calculate);
         toggleCompliance.addEventListener('change', calculate);
         toggleHeat.addEventListener('change', calculate);

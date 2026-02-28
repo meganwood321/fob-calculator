@@ -58,14 +58,15 @@ Charge to customer minus actual cost for each applicable variable:
 | Variable | Charge (default) | Actual Cost | Margin |
 |---|---|---|---|
 | Brokerage | $575 | $0 | $575 |
-| Freight | $2,262 | $1,850 | $412 |
+| Freight (Nichibo) | $2,041 | $1,540 | $501 |
+| Freight (others) | $2,262 | $1,850 | $412 |
 | Marine Insurance | $110 | $110 | $0 |
-| Statement of Compliance | $390 | $340 | $50 |
+| Statement of Compliance | $440 | $390 | $50 |
 | Compliance (European) | $1,900 | $1,900 | $0 |
 | Compliance (Other) | $1,100 | $1,100 | $0 |
 | Heat Treatment | $225 | $225 | $0 |
 
-Actual costs stored in `ACTUAL_COSTS` constant. Margins recalculate dynamically if variables are changed.
+Actual costs stored in `ACTUAL_COSTS` constant (except freight, which uses `AGENT_FREIGHT`). Margins recalculate dynamically if variables are changed.
 
 ### Part 2: Agent Fee Margin
 = Agent margin in yen / customer rate
@@ -113,7 +114,7 @@ All costs are GST-exempt and configurable via the Variables panel.
 1. **Header row**: "Jason's Calculator" title + Variables button
 2. **Rate info**: Estimated Spot Buy rate and customer rate
 3. **Direction toggle**: NZD to Yen / Yen to NZD (defaults to Yen to NZD)
-4. **Input field**: $ or ¥ prefix changes with direction
+4. **Input field**: $ or ¥ prefix, comma formatting as you type, ÷1000 for yen input
 5. **Result boxes** (side by side): FOB (NZD Cost to Customer) + FOB (Yen)
    - Input currency box is dimmed/dashed
    - Output currency box is highlighted/scaled up
@@ -172,7 +173,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 4d** (2026-02-22): Default to Yen to NZD on load, updated input labels (NZD Cost to Client / Yen FOB)
 - **Phase 4e** (2026-02-22): Styled margin as matching agent-row
 - **Phase 4f** (2026-02-22): Moved Options section above Deductions section
-- **Phase 4g** (2026-02-23): Added Margin breakdown toggle button with detailed 3-part breakdown panel - CURRENT
+- **Phase 4g** (2026-02-23): Added Margin breakdown toggle button with detailed 3-part breakdown panel
+- **Phase 5a** (2026-02-28): Updated SoC to $440/$390, agent-specific freight (Nichibo $2041/$1540, others $2262/$1850), yen input ÷1000, comma-formatted input field - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
