@@ -574,10 +574,6 @@
                     <td><input type="number" id="setCost_brokerage" min="0" step="any"></td>
                 </tr>
                 <tr>
-                    <td>Freight</td>
-                    <td><input type="number" id="setCost_freight" min="0" step="any"></td>
-                </tr>
-                <tr>
                     <td>Marine Insurance GST</td>
                     <td><input type="number" id="setCost_marineInsGst" min="0" step="any"></td>
                 </tr>
@@ -824,7 +820,6 @@
         const DEFAULTS = {
             rateAdjust: -0.80,
             brokerage: 575,
-            freight: 2262,
             marineInsGst: 110,
             soc: 440,
             compEuro: 1900,
@@ -852,7 +847,6 @@
         const setCost = {
             rateAdjust: document.getElementById('setCost_rateAdjust'),
             brokerage: document.getElementById('setCost_brokerage'),
-            freight: document.getElementById('setCost_freight'),
             marineInsGst: document.getElementById('setCost_marineInsGst'),
             soc: document.getElementById('setCost_soc'),
             compEuro: document.getElementById('setCost_compEuro'),
@@ -882,7 +876,6 @@
 
             setCost.rateAdjust.value = values.rateAdjust !== undefined ? values.rateAdjust : DEFAULTS.rateAdjust;
             setCost.brokerage.value = values.brokerage;
-            setCost.freight.value = values.freight;
             setCost.marineInsGst.value = values.marineInsGst !== undefined ? values.marineInsGst : DEFAULTS.marineInsGst;
             setCost.soc.value = values.soc;
             setCost.compEuro.value = values.compEuro;
@@ -894,7 +887,6 @@
             const data = {
                 rateAdjust: parseFloat(setCost.rateAdjust.value) || 0,
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
-                freight: parseFloat(setCost.freight.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
@@ -920,7 +912,6 @@
             const defs = getDefaults();
             setCost.rateAdjust.value = defs.rateAdjust !== undefined ? defs.rateAdjust : DEFAULTS.rateAdjust;
             setCost.brokerage.value = defs.brokerage;
-            setCost.freight.value = defs.freight;
             setCost.marineInsGst.value = defs.marineInsGst !== undefined ? defs.marineInsGst : DEFAULTS.marineInsGst;
             setCost.soc.value = defs.soc;
             setCost.compEuro.value = defs.compEuro;
@@ -934,7 +925,6 @@
             const data = {
                 rateAdjust: parseFloat(setCost.rateAdjust.value) || 0,
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
-                freight: parseFloat(setCost.freight.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
@@ -987,7 +977,7 @@
         function getCosts() {
             return {
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
-                freight: parseFloat(setCost.freight.value) || 0,
+                freight: 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
