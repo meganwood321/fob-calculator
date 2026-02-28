@@ -817,6 +817,8 @@
         };
 
         // --- Default values (Cost to Customer) ---
+        // Bump DEFAULTS_VERSION when any default value changes to force update on all devices
+        const DEFAULTS_VERSION = 2;
         const DEFAULTS = {
             rateAdjust: -0.80,
             brokerage: 575,
@@ -829,6 +831,7 @@
 
         const STORAGE_KEY = 'fobCalcCosts';
         const DEFAULTS_KEY = 'fobCalcDefaults';
+        const VERSION_KEY = 'fobCalcVersion';
 
         // --- Elements ---
         const amountInput = document.getElementById('amountInput');
@@ -867,6 +870,14 @@
 
         // --- LocalStorage: load/save ---
         function loadCosts() {
+            // Check if defaults have been updated since last visit
+            const storedVersion = parseInt(localStorage.getItem(VERSION_KEY)) || 0;
+            if (storedVersion < DEFAULTS_VERSION) {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(DEFAULTS_KEY);
+                localStorage.setItem(VERSION_KEY, DEFAULTS_VERSION);
+            }
+
             let saved = null;
             try {
                 saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
