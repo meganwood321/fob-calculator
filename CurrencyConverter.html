@@ -1116,7 +1116,7 @@
             if (isHeat) variableMargin += (costs.heat - ACTUAL_COSTS.heat);
 
             // Part 2: Agent fee margin (yen → NZD)
-            const agentMarginNZD = customerRate ? (agentMarginYen / customerRate) : 0;
+            const agentMarginNZD = adjustedRate ? (agentMarginYen / adjustedRate) : 0;
 
             // Part 3: Rate markup on all FOB yen (estimated vs customer rate)
             const rateMarkup = (adjustedRate && customerRate)
@@ -1163,7 +1163,7 @@
             mbHTML += mbRow('Subtotal', fmtNZD(variableMargin), 'margin-total');
 
             mbHTML += '<div class="margin-breakdown-row" style="margin-top:8px"><span><strong>Agent Fee Margin</strong></span><span></span></div>';
-            mbHTML += mbRow('Agent margin: ' + fmtJPY(agentMarginYen) + ' ÷ ' + customerRate.toFixed(2), fmtNZD(agentMarginNZD));
+            mbHTML += mbRow('Agent margin: ' + fmtJPY(agentMarginYen) + ' ÷ ' + (adjustedRate ? adjustedRate.toFixed(2) : '0'), fmtNZD(agentMarginNZD));
 
             mbHTML += '<div class="margin-breakdown-row" style="margin-top:8px"><span><strong>Rate Markup</strong></span><span></span></div>';
             mbHTML += mbRow('FOB ' + fmtJPY(yenTotal) + ' × ' + YEN_MARGIN.toFixed(2) + ' ÷ (' + customerRate.toFixed(2) + ' × ' + (adjustedRate ? adjustedRate.toFixed(2) : '0') + ')', fmtNZD(rateMarkup));
