@@ -5,7 +5,7 @@ A bi-directional FOB cost calculator that converts between NZD and Japanese Yen.
 
 Built for Megan starting 2026-02-15. Renamed to "Jason's Calculator" on 2026-02-22.
 
-## Current State: Phase 4 - Car Cost, Agent Fees & Margin (Complete)
+## Current State: Phase 5b - Tiered Fees for All Agents, FAF/BAF/EV Loading (Complete)
 - Single HTML file: `CurrencyConverter.html`
 - Desktop copy: `D:/Users/Megan/OneDrive/Desktop/CurrencyConverter.html`
 - Project folder: `C:/ClaudeProjects/Currency Converter/`
@@ -36,18 +36,15 @@ The app has a direction toggle at the top. **Defaults to Yen to NZD** on load.
 ## Car Cost Calculation
 - **Car Cost (yen)** = FOB (yen) - Agent Oncharge Fee (yen)
 - Agent fee depends on selected agent and car cost tier
-- For Nichibo (tiered fees): uses **iterative solver** to resolve circular reference (agent fee depends on car cost, car cost depends on agent fee)
-- For WEINS/NTP/Autobacs/Gulliver: flat ¥112,000 oncharge fee
+- All agents use the same tiered fee schedule — **iterative solver** resolves circular reference (agent fee depends on car cost, car cost depends on agent fee)
 
 ## Agent Fee Data
-Stored in `AGENT_FEES` object with `fee` (oncharge) and `margin` (oncharge - actual agent fee) per tier.
+All agents share one 28-tier fee schedule, defined once as `TIERED_FEES` and referenced by every agent in `AGENT_FEES`. Each tier has `fee` (oncharge) and `margin` (oncharge - actual agent fee).
 
-### Agents
-- **Nichibo**: 28 tiers from ¥1 to ¥14,000,000, fees from ¥88,000 to ¥795,000
-- **WEINS**: flat ¥112,000 (margin ¥32,000)
-- **NTP**: flat ¥112,000 (margin ¥32,000)
-- **Autobacs**: flat ¥112,000 (margin ¥32,000)
-- **Gulliver**: flat ¥112,000 (margin ¥32,000)
+### Agents (dropdown)
+Nichibo, WEINS, NTP, Autobacs, Gulliver, Heiwa — all use the identical tiered schedule:
+- 28 tiers from ¥1 to ¥14,000,000, fees from ¥88,000 to ¥795,000
+- Agent selection still matters for **freight** (Nichibo has different freight, see below)
 
 ## Margin Calculation
 Displayed in a row under Car Cost. Total margin = 3 parts:
@@ -58,13 +55,16 @@ Charge to customer minus actual cost for each applicable variable:
 | Variable | Charge (default) | Actual Cost | Margin |
 |---|---|---|---|
 | Brokerage | $575 | $0 | $575 |
-| Freight (Nichibo) | $2,041 | $1,540 | $501 |
+| Freight (Nichibo) | $2,072 | $1,570 | $502 |
 | Freight (others) | $2,262 | $1,850 | $412 |
+| FAF | $1 | $1 | $0 |
+| BAF | $1 | $1 | $0 |
 | Marine Insurance | $110 | $110 | $0 |
 | Statement of Compliance | $440 | $390 | $50 |
 | Compliance (European) | $1,900 | $1,900 | $0 |
 | Compliance (Other) | $1,100 | $1,100 | $0 |
 | Heat Treatment | $225 | $225 | $0 |
+| EV Loading | $575 | $575 | $0 |
 
 Actual costs stored in `ACTUAL_COSTS` constant (except freight, which uses `AGENT_FREIGHT`). Margins recalculate dynamically if variables are changed.
 
@@ -88,23 +88,28 @@ All costs are GST-exempt and configurable via the Variables panel.
 |---|---|
 | Spot Buy Rate Adjustment | -0.80 |
 | Brokerage | $575 |
-| Freight | $2,262 |
+| FAF | $1 |
+| BAF | $1 |
 | Marine Insurance GST | $110 |
-| Statement of Compliance | $390 |
+| Statement of Compliance | $440 |
 | Compliance (European) | $1,900 |
 | Compliance (Other) | $1,100 |
 | Heat Treatment | $225 |
+| EV Loading | $575 |
+
+Note: Freight is not in the Variables panel — it's driven by the selected agent (Nichibo $2,072 / others $2,262).
 
 ### Conditional Logic
-- **Brokerage, Freight & Marine Insurance GST**: Always applied automatically
+- **Brokerage, Freight, FAF, BAF & Marine Insurance GST**: Always applied automatically
 - **European?** (Y/N toggle): Controls what options appear
-- **Statement of Compliance?**: Only shown if European = Yes. Subtracts $390
+- **Statement of Compliance?**: Only shown if European = Yes. Adds $440 (actual cost $390)
 - **Compliance?**: If European + Yes → $1,900; if Not European + Yes → $1,100
 - **Heat Treatment?**: If Yes → $225
+- **EV Loading?**: If Yes → $575
 
 ## Variables Panel Features
 - **"Variables" button** in top-right header opens/closes the panel
-- Clean table layout showing Spot Buy Rate Adjustment + all 7 cost values
+- Clean table layout showing Spot Buy Rate Adjustment + all 9 cost values (Brokerage, FAF, BAF, Marine Ins GST, SoC, Compliance Euro, Compliance Other, Heat Treatment, EV Loading)
 - **Auto-saves** to browser localStorage on every edit (persists across sessions)
 - **"Reset to Defaults"** button: restores values to saved defaults
 - **"Save as New Defaults"** button: saves current values as new defaults
@@ -122,8 +127,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 7. **Car Cost box**: Car Cost in yen with agent fee subtitle
 8. **Margin row**: Total margin in NZD (green text) + "Breakdown" button
    - Toggles collapsible panel showing all 3 margin parts with formulas
-9. **Options toggles**: European, SoC, Compliance, Heat Treatment
-10. **Auto deductions**: Brokerage, Freight, and Marine Insurance GST (always on)
+9. **Options toggles**: European, SoC, Compliance, Heat Treatment, EV Loading
+10. **Auto deductions**: Brokerage, Freight, FAF, BAF, and Marine Insurance GST (always on)
 11. **Breakdown**: Full step-by-step calculation including Car Cost section
 12. **Status**: Rate update timestamp
 
@@ -174,7 +179,8 @@ All costs are GST-exempt and configurable via the Variables panel.
 - **Phase 4e** (2026-02-22): Styled margin as matching agent-row
 - **Phase 4f** (2026-02-22): Moved Options section above Deductions section
 - **Phase 4g** (2026-02-23): Added Margin breakdown toggle button with detailed 3-part breakdown panel
-- **Phase 5a** (2026-02-28): Updated SoC to $440/$390, agent-specific freight (Nichibo $2041/$1540, others $2262/$1850), yen input ÷1000, comma-formatted input field - CURRENT
+- **Phase 5a** (2026-02-28): Updated SoC to $440/$390, agent-specific freight (Nichibo $2041/$1540, others $2262/$1850), yen input ÷1000, comma-formatted input field
+- **Phase 5b** (2026-04-15): All agents now use the same 28-tier fee schedule (WEINS/NTP/Autobacs/Gulliver/Heiwa were previously flat ¥112,000); added FAF ($1) and BAF ($1) as always-applied GST-exempt costs; added EV Loading ($575) optional toggle; updated Nichibo freight to $2,072/$1,570; DEFAULTS_VERSION bumped to 4 - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
