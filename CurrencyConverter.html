@@ -574,8 +574,20 @@
                     <td><input type="number" id="setCost_brokerage" min="0" step="any"></td>
                 </tr>
                 <tr>
+                    <td>FAF</td>
+                    <td><input type="number" id="setCost_faf" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>BAF</td>
+                    <td><input type="number" id="setCost_baf" min="0" step="any"></td>
+                </tr>
+                <tr>
                     <td>Marine Insurance GST</td>
                     <td><input type="number" id="setCost_marineInsGst" min="0" step="any"></td>
+                </tr>
+                <tr>
+                    <td>EV Loading</td>
+                    <td><input type="number" id="setCost_ev" min="0" step="any"></td>
                 </tr>
                 <tr>
                     <td>Statement of Compliance</td>
@@ -706,6 +718,17 @@
             </label>
         </div>
 
+        <div class="toggle-row">
+            <div>
+                <div class="label-text">EV Loading?</div>
+                <div class="label-cost" id="evLabel">$575.00</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="toggleEV">
+                <span class="switch-slider"></span>
+            </label>
+        </div>
+
         <hr class="divider">
 
         <!-- Always applied costs -->
@@ -726,6 +749,20 @@
         </div>
         <div class="toggle-row" style="cursor: default;">
             <div>
+                <div class="label-text">FAF</div>
+                <div class="label-cost" id="fafLabel">$1.00</div>
+            </div>
+            <span style="color: #2ecc71; font-size: 0.8rem;">AUTO</span>
+        </div>
+        <div class="toggle-row" style="cursor: default;">
+            <div>
+                <div class="label-text">BAF</div>
+                <div class="label-cost" id="bafLabel">$1.00</div>
+            </div>
+            <span style="color: #2ecc71; font-size: 0.8rem;">AUTO</span>
+        </div>
+        <div class="toggle-row" style="cursor: default;">
+            <div>
                 <div class="label-text">Marine Insurance GST</div>
                 <div class="label-cost" id="marineInsGstLabel">$110.00</div>
             </div>
@@ -740,52 +777,44 @@
 
     <script>
         // --- Agent fee data (fee = oncharge, margin = oncharge - actual agent fee) ---
+        // All agents share the same tiered fee schedule.
+        const TIERED_FEES = [
+            { low: 1, high: 500000, fee: 88000, margin: 26000 },
+            { low: 500001, high: 1000000, fee: 94000, margin: 29000 },
+            { low: 1000001, high: 1500000, fee: 114000, margin: 39000 },
+            { low: 1500001, high: 2000000, fee: 124000, margin: 42000 },
+            { low: 2000001, high: 2500000, fee: 140000, margin: 53000 },
+            { low: 2500001, high: 3000000, fee: 155000, margin: 60000 },
+            { low: 3000001, high: 3500000, fee: 170000, margin: 65000 },
+            { low: 3500001, high: 4000000, fee: 185000, margin: 70000 },
+            { low: 4000001, high: 4500000, fee: 215000, margin: 90000 },
+            { low: 4500001, high: 5000000, fee: 245000, margin: 120000 },
+            { low: 5000001, high: 5500000, fee: 275000, margin: 150000 },
+            { low: 5500001, high: 6000000, fee: 305000, margin: 180000 },
+            { low: 6000001, high: 6500000, fee: 335000, margin: 210000 },
+            { low: 6500001, high: 7000000, fee: 365000, margin: 240000 },
+            { low: 7000001, high: 7500000, fee: 395000, margin: 270000 },
+            { low: 7500001, high: 8000000, fee: 425000, margin: 300000 },
+            { low: 8000001, high: 8500000, fee: 455000, margin: 330000 },
+            { low: 8500001, high: 9000000, fee: 485000, margin: 360000 },
+            { low: 9000001, high: 9500000, fee: 515000, margin: 390000 },
+            { low: 9500001, high: 10000000, fee: 545000, margin: 420000 },
+            { low: 10000001, high: 10500000, fee: 585000, margin: 460000 },
+            { low: 10500001, high: 11000000, fee: 615000, margin: 490000 },
+            { low: 11000001, high: 11500000, fee: 645000, margin: 520000 },
+            { low: 11500001, high: 12000000, fee: 675000, margin: 550000 },
+            { low: 12000001, high: 12500000, fee: 705000, margin: 580000 },
+            { low: 12500001, high: 13000000, fee: 735000, margin: 610000 },
+            { low: 13000001, high: 13500000, fee: 765000, margin: 640000 },
+            { low: 13500001, high: 14000000, fee: 795000, margin: 670000 }
+        ];
         const AGENT_FEES = {
-            'Nichibo': [
-                { low: 1, high: 500000, fee: 88000, margin: 26000 },
-                { low: 500001, high: 1000000, fee: 94000, margin: 29000 },
-                { low: 1000001, high: 1500000, fee: 114000, margin: 39000 },
-                { low: 1500001, high: 2000000, fee: 124000, margin: 42000 },
-                { low: 2000001, high: 2500000, fee: 140000, margin: 53000 },
-                { low: 2500001, high: 3000000, fee: 155000, margin: 60000 },
-                { low: 3000001, high: 3500000, fee: 170000, margin: 65000 },
-                { low: 3500001, high: 4000000, fee: 185000, margin: 70000 },
-                { low: 4000001, high: 4500000, fee: 215000, margin: 90000 },
-                { low: 4500001, high: 5000000, fee: 245000, margin: 120000 },
-                { low: 5000001, high: 5500000, fee: 275000, margin: 150000 },
-                { low: 5500001, high: 6000000, fee: 305000, margin: 180000 },
-                { low: 6000001, high: 6500000, fee: 335000, margin: 210000 },
-                { low: 6500001, high: 7000000, fee: 365000, margin: 240000 },
-                { low: 7000001, high: 7500000, fee: 395000, margin: 270000 },
-                { low: 7500001, high: 8000000, fee: 425000, margin: 300000 },
-                { low: 8000001, high: 8500000, fee: 455000, margin: 330000 },
-                { low: 8500001, high: 9000000, fee: 485000, margin: 360000 },
-                { low: 9000001, high: 9500000, fee: 515000, margin: 390000 },
-                { low: 9500001, high: 10000000, fee: 545000, margin: 420000 },
-                { low: 10000001, high: 10500000, fee: 585000, margin: 460000 },
-                { low: 10500001, high: 11000000, fee: 615000, margin: 490000 },
-                { low: 11000001, high: 11500000, fee: 645000, margin: 520000 },
-                { low: 11500001, high: 12000000, fee: 675000, margin: 550000 },
-                { low: 12000001, high: 12500000, fee: 705000, margin: 580000 },
-                { low: 12500001, high: 13000000, fee: 735000, margin: 610000 },
-                { low: 13000001, high: 13500000, fee: 765000, margin: 640000 },
-                { low: 13500001, high: 14000000, fee: 795000, margin: 670000 }
-            ],
-            'WEINS': [
-                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
-            ],
-            'NTP': [
-                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
-            ],
-            'Autobacs': [
-                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
-            ],
-            'Gulliver': [
-                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
-            ],
-            'Heiwa': [
-                { low: 1, high: 14000000, fee: 112000, margin: 32000 }
-            ]
+            'Nichibo':  TIERED_FEES,
+            'WEINS':    TIERED_FEES,
+            'NTP':      TIERED_FEES,
+            'Autobacs': TIERED_FEES,
+            'Gulliver': TIERED_FEES,
+            'Heiwa':    TIERED_FEES
         };
 
         function getAgentFee(agent, carCostYen) {
@@ -803,7 +832,7 @@
 
         // --- Agent-specific freight charges ---
         const AGENT_FREIGHT = {
-            'Nichibo':  { costToCustomer: 2041, costToSBL: 1540 },
+            'Nichibo':  { costToCustomer: 2072, costToSBL: 1570 },
             'WEINS':    { costToCustomer: 2262, costToSBL: 1850 },
             'NTP':      { costToCustomer: 2262, costToSBL: 1850 },
             'Autobacs': { costToCustomer: 2262, costToSBL: 1850 },
@@ -814,24 +843,30 @@
         // --- Actual costs for variable items (for margin calculation) ---
         const ACTUAL_COSTS = {
             brokerage: 0,
+            faf: 1,
+            baf: 1,
             marineInsGst: 110,
             soc: 390,
             compEuro: 1900,
             compOther: 1100,
-            heat: 225
+            heat: 225,
+            ev: 575
         };
 
         // --- Default values (Cost to Customer) ---
         // Bump DEFAULTS_VERSION when any default value changes to force update on all devices
-        const DEFAULTS_VERSION = 2;
+        const DEFAULTS_VERSION = 4;
         const DEFAULTS = {
             rateAdjust: -0.80,
             brokerage: 575,
+            faf: 1,
+            baf: 1,
             marineInsGst: 110,
             soc: 440,
             compEuro: 1900,
             compOther: 1100,
-            heat: 225
+            heat: 225,
+            ev: 575
         };
 
         const STORAGE_KEY = 'fobCalcCosts';
@@ -845,6 +880,7 @@
         const toggleSoC = document.getElementById('toggleSoC');
         const toggleCompliance = document.getElementById('toggleCompliance');
         const toggleHeat = document.getElementById('toggleHeat');
+        const toggleEV = document.getElementById('toggleEV');
         const socRow = document.getElementById('socRow');
         const rateDisplay = document.getElementById('rateDisplay');
         const custRateDisplay = document.getElementById('custRateDisplay');
@@ -855,11 +891,14 @@
         const setCost = {
             rateAdjust: document.getElementById('setCost_rateAdjust'),
             brokerage: document.getElementById('setCost_brokerage'),
+            faf: document.getElementById('setCost_faf'),
+            baf: document.getElementById('setCost_baf'),
             marineInsGst: document.getElementById('setCost_marineInsGst'),
             soc: document.getElementById('setCost_soc'),
             compEuro: document.getElementById('setCost_compEuro'),
             compOther: document.getElementById('setCost_compOther'),
-            heat: document.getElementById('setCost_heat')
+            heat: document.getElementById('setCost_heat'),
+            ev: document.getElementById('setCost_ev')
         };
 
         let liveYenRate = null;
@@ -892,22 +931,28 @@
 
             setCost.rateAdjust.value = values.rateAdjust !== undefined ? values.rateAdjust : DEFAULTS.rateAdjust;
             setCost.brokerage.value = values.brokerage;
+            setCost.faf.value = values.faf !== undefined ? values.faf : DEFAULTS.faf;
+            setCost.baf.value = values.baf !== undefined ? values.baf : DEFAULTS.baf;
             setCost.marineInsGst.value = values.marineInsGst !== undefined ? values.marineInsGst : DEFAULTS.marineInsGst;
             setCost.soc.value = values.soc;
             setCost.compEuro.value = values.compEuro;
             setCost.compOther.value = values.compOther;
             setCost.heat.value = values.heat;
+            setCost.ev.value = values.ev !== undefined ? values.ev : DEFAULTS.ev;
         }
 
         function saveCosts() {
             const data = {
                 rateAdjust: parseFloat(setCost.rateAdjust.value) || 0,
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
+                faf: parseFloat(setCost.faf.value) || 0,
+                baf: parseFloat(setCost.baf.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
                 compOther: parseFloat(setCost.compOther.value) || 0,
-                heat: parseFloat(setCost.heat.value) || 0
+                heat: parseFloat(setCost.heat.value) || 0,
+                ev: parseFloat(setCost.ev.value) || 0
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
@@ -928,11 +973,14 @@
             const defs = getDefaults();
             setCost.rateAdjust.value = defs.rateAdjust !== undefined ? defs.rateAdjust : DEFAULTS.rateAdjust;
             setCost.brokerage.value = defs.brokerage;
+            setCost.faf.value = defs.faf !== undefined ? defs.faf : DEFAULTS.faf;
+            setCost.baf.value = defs.baf !== undefined ? defs.baf : DEFAULTS.baf;
             setCost.marineInsGst.value = defs.marineInsGst !== undefined ? defs.marineInsGst : DEFAULTS.marineInsGst;
             setCost.soc.value = defs.soc;
             setCost.compEuro.value = defs.compEuro;
             setCost.compOther.value = defs.compOther;
             setCost.heat.value = defs.heat;
+            setCost.ev.value = defs.ev !== undefined ? defs.ev : DEFAULTS.ev;
             saveCosts();
             calculate();
         }
@@ -941,11 +989,14 @@
             const data = {
                 rateAdjust: parseFloat(setCost.rateAdjust.value) || 0,
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
+                faf: parseFloat(setCost.faf.value) || 0,
+                baf: parseFloat(setCost.baf.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
                 compOther: parseFloat(setCost.compOther.value) || 0,
-                heat: parseFloat(setCost.heat.value) || 0
+                heat: parseFloat(setCost.heat.value) || 0,
+                ev: parseFloat(setCost.ev.value) || 0
             };
             localStorage.setItem(DEFAULTS_KEY, JSON.stringify(data));
             saveCosts();
@@ -994,11 +1045,14 @@
             return {
                 brokerage: parseFloat(setCost.brokerage.value) || 0,
                 freight: 0,
+                faf: parseFloat(setCost.faf.value) || 0,
+                baf: parseFloat(setCost.baf.value) || 0,
                 marineInsGst: parseFloat(setCost.marineInsGst.value) || 0,
                 soc: parseFloat(setCost.soc.value) || 0,
                 compEuro: parseFloat(setCost.compEuro.value) || 0,
                 compOther: parseFloat(setCost.compOther.value) || 0,
-                heat: parseFloat(setCost.heat.value) || 0
+                heat: parseFloat(setCost.heat.value) || 0,
+                ev: parseFloat(setCost.ev.value) || 0
             };
         }
 
@@ -1011,18 +1065,21 @@
             return '\u00A5' + Math.round(val).toLocaleString();
         }
 
-        function getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat) {
-            let total = costs.brokerage + costs.freight + costs.marineInsGst;
+        function getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat, isEV) {
+            let total = costs.brokerage + costs.freight + costs.faf + costs.baf + costs.marineInsGst;
             if (isEuropean && isSoC) total += costs.soc;
             if (isCompliance) total += isEuropean ? costs.compEuro : costs.compOther;
             if (isHeat) total += costs.heat;
+            if (isEV) total += costs.ev;
             return total;
         }
 
-        function getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat) {
+        function getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat, isEV) {
             const items = [
                 { label: 'Brokerage', amount: costs.brokerage },
                 { label: 'Freight', amount: costs.freight },
+                { label: 'FAF', amount: costs.faf },
+                { label: 'BAF', amount: costs.baf },
                 { label: 'Marine Insurance GST', amount: costs.marineInsGst }
             ];
             if (isEuropean && isSoC) items.push({ label: 'Statement of Compliance', amount: costs.soc });
@@ -1032,6 +1089,7 @@
                     : { label: 'Compliance (Other)', amount: costs.compOther });
             }
             if (isHeat) items.push({ label: 'Heat Treatment', amount: costs.heat });
+            if (isEV) items.push({ label: 'EV Loading', amount: costs.ev });
             return items;
         }
 
@@ -1045,6 +1103,7 @@
             const isSoC = toggleSoC.checked;
             const isCompliance = toggleCompliance.checked;
             const isHeat = toggleHeat.checked;
+            const isEV = toggleEV.checked;
             const adjustedRate = getAdjustedLiveRate();
             const customerRate = adjustedRate ? (adjustedRate - YEN_MARGIN) : 0;
             updateRateDisplay();
@@ -1054,8 +1113,8 @@
             const agentFreight = AGENT_FREIGHT[agent] || AGENT_FREIGHT['WEINS'];
             costs.freight = agentFreight.costToCustomer;
 
-            const fixedCosts = getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat);
-            const costItems = getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat);
+            const fixedCosts = getFixedCostsTotal(costs, isEuropean, isSoC, isCompliance, isHeat, isEV);
+            const costItems = getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat, isEV);
 
             let nzdExclGST, gst, nzdInclGST, nzdCostToCustomer, yenTotal;
             let breakdownHTML = '';
@@ -1096,7 +1155,7 @@
 
             // --- Car Cost calculation (in yen) ---
             // Car Cost = FOB (yenTotal) - Agent Fee
-            // Agent fee depends on Car Cost → solve iteratively for Nichibo
+            // Agent fee depends on Car Cost → solve iteratively (all agents are tiered)
             let carCostYen = yenTotal; // initial guess
             let agentFeeYen = 0;
             let agentMarginYen = 0;
@@ -1113,12 +1172,15 @@
             // Part 1: Variable margins (charge - actual cost)
             let variableMargin = (costs.brokerage - ACTUAL_COSTS.brokerage)
                                + (costs.freight - agentFreight.costToSBL)
+                               + (costs.faf - ACTUAL_COSTS.faf)
+                               + (costs.baf - ACTUAL_COSTS.baf)
                                + (costs.marineInsGst - ACTUAL_COSTS.marineInsGst);
             if (isEuropean && isSoC) variableMargin += (costs.soc - ACTUAL_COSTS.soc);
             if (isCompliance) variableMargin += isEuropean
                 ? (costs.compEuro - ACTUAL_COSTS.compEuro)
                 : (costs.compOther - ACTUAL_COSTS.compOther);
             if (isHeat) variableMargin += (costs.heat - ACTUAL_COSTS.heat);
+            if (isEV) variableMargin += (costs.ev - ACTUAL_COSTS.ev);
 
             // Part 2: Agent fee margin (yen → NZD)
             const agentMarginNZD = adjustedRate ? (agentMarginYen / adjustedRate) : 0;
@@ -1155,6 +1217,8 @@
             mbHTML += '<div class="margin-breakdown-row"><span><strong>Variable Margins</strong></span><span></span></div>';
             mbHTML += mbRow('Brokerage (' + fmtNZD(costs.brokerage) + ' − ' + fmtNZD(ACTUAL_COSTS.brokerage) + ')', fmtNZD(costs.brokerage - ACTUAL_COSTS.brokerage));
             mbHTML += mbRow('Freight (' + fmtNZD(costs.freight) + ' − ' + fmtNZD(agentFreight.costToSBL) + ')', fmtNZD(costs.freight - agentFreight.costToSBL));
+            mbHTML += mbRow('FAF (' + fmtNZD(costs.faf) + ' − ' + fmtNZD(ACTUAL_COSTS.faf) + ')', fmtNZD(costs.faf - ACTUAL_COSTS.faf));
+            mbHTML += mbRow('BAF (' + fmtNZD(costs.baf) + ' − ' + fmtNZD(ACTUAL_COSTS.baf) + ')', fmtNZD(costs.baf - ACTUAL_COSTS.baf));
             mbHTML += mbRow('Marine Ins (' + fmtNZD(costs.marineInsGst) + ' − ' + fmtNZD(ACTUAL_COSTS.marineInsGst) + ')', fmtNZD(costs.marineInsGst - ACTUAL_COSTS.marineInsGst));
             if (isEuropean && isSoC) mbHTML += mbRow('SoC (' + fmtNZD(costs.soc) + ' − ' + fmtNZD(ACTUAL_COSTS.soc) + ')', fmtNZD(costs.soc - ACTUAL_COSTS.soc));
             if (isCompliance) {
@@ -1165,6 +1229,7 @@
                 }
             }
             if (isHeat) mbHTML += mbRow('Heat Treatment (' + fmtNZD(costs.heat) + ' − ' + fmtNZD(ACTUAL_COSTS.heat) + ')', fmtNZD(costs.heat - ACTUAL_COSTS.heat));
+            if (isEV) mbHTML += mbRow('EV (' + fmtNZD(costs.ev) + ' − ' + fmtNZD(ACTUAL_COSTS.ev) + ')', fmtNZD(costs.ev - ACTUAL_COSTS.ev));
             mbHTML += mbRow('Subtotal', fmtNZD(variableMargin), 'margin-total');
 
             mbHTML += '<div class="margin-breakdown-row" style="margin-top:8px"><span><strong>Agent Fee Margin</strong></span><span></span></div>';
@@ -1178,9 +1243,12 @@
 
             document.getElementById('brokerageLabel').textContent = fmtNZD(costs.brokerage);
             document.getElementById('freightLabel').textContent = fmtNZD(costs.freight) + ' (' + agent + ')';
+            document.getElementById('fafLabel').textContent = fmtNZD(costs.faf);
+            document.getElementById('bafLabel').textContent = fmtNZD(costs.baf);
             document.getElementById('marineInsGstLabel').textContent = fmtNZD(costs.marineInsGst);
             document.getElementById('socLabel').textContent = fmtNZD(costs.soc);
             document.getElementById('heatLabel').textContent = fmtNZD(costs.heat);
+            document.getElementById('evLabel').textContent = fmtNZD(costs.ev);
             document.getElementById('complianceLabel').textContent = isEuropean
                 ? fmtNZD(costs.compEuro) + ' (European)'
                 : fmtNZD(costs.compOther) + ' (Other)';
@@ -1275,6 +1343,7 @@
         toggleSoC.addEventListener('change', calculate);
         toggleCompliance.addEventListener('change', calculate);
         toggleHeat.addEventListener('change', calculate);
+        toggleEV.addEventListener('change', calculate);
         document.getElementById('agentSelect').addEventListener('change', calculate);
 
         // Settings inputs: save + recalculate on every change
