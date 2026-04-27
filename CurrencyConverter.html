@@ -660,7 +660,10 @@
         <!-- Car Cost Result -->
         <div class="car-cost-section">
             <div class="agent-row">
-                <div class="label-text">Agent</div>
+                <div>
+                    <div class="label-text">Agent</div>
+                    <div class="label-cost" id="agentFeeLabel"></div>
+                </div>
                 <select class="agent-select" id="agentSelect">
                     <option value="Nichibo">Nichibo</option>
                     <option value="WEINS">WEINS</option>
@@ -1177,13 +1180,14 @@
                 nzdExclGST = nzdInclGST - gst;
                 yenTotal = nzdExclGST * customerRate; // FOB yen
 
-                // Derive car cost iteratively (for margin calculation only)
+                // Derive car cost iteratively (subtract agent fee and Japan costs from FOB)
+                const additionalJapanYenReverse = parseJapanCostsValue() * 1000;
                 carCostYen = yenTotal;
                 for (let i = 0; i < 10; i++) {
                     const result = getAgentFee(agent, carCostYen);
                     agentFeeYen = result.fee;
                     agentMarginYen = result.margin;
-                    const newCarCost = yenTotal - agentFeeYen;
+                    const newCarCost = yenTotal - agentFeeYen - additionalJapanYenReverse;
                     if (newCarCost === carCostYen) break;
                     carCostYen = newCarCost;
                 }
@@ -1228,6 +1232,7 @@
             document.getElementById('totalNZD').textContent = isYenToNZD ? fmtNZD(nzdCostToCustomer) : fmtJPY(carCostYen);
             document.getElementById('totalJPY').textContent = fmtJPY(yenTotal);
             document.getElementById('yenRateSub').textContent = '@ ' + customerRate.toFixed(2) + '/NZD';
+            document.getElementById('agentFeeLabel').textContent = agentFeeYen > 0 ? 'Fee: ' + fmtJPY(agentFeeYen) : '';
 
             // Margin display
             document.getElementById('marginDisplay').textContent = fmtNZD(totalMargin);
@@ -1303,6 +1308,7 @@
                 japanCostsSection.style.display = '';
                 applyJapanCostsDefault();
                 document.getElementById('nzdBoxLabel').textContent = 'NZD Cost to Customer';
+
                 document.getElementById('nzdBoxSub').textContent = 'incl. all costs';
                 nzdBox.classList.remove('yen');
                 nzdBox.classList.add('is-output');
@@ -1314,7 +1320,8 @@
                 document.getElementById('inputPrefix').textContent = '$';
                 amountInput.placeholder = '0.00';
                 document.getElementById('costsSectionLabel').textContent = 'Deductions (all GST-exempt)';
-                japanCostsSection.style.display = 'none';
+                japanCostsSection.style.display = '';
+                applyJapanCostsDefault();
                 document.getElementById('nzdBoxLabel').textContent = 'Car Cost';
                 document.getElementById('nzdBoxSub').textContent = 'in yen';
                 nzdBox.classList.add('yen');
