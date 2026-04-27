@@ -615,12 +615,12 @@
 
         <!-- Direction Toggle -->
         <div class="direction-wrapper">
-            <span class="dir-label left active" id="dirLabelLeft">NZD to Yen</span>
+            <span class="dir-label left active" id="dirLabelLeft">Yen to NZD</span>
             <label class="dir-toggle">
                 <input type="checkbox" id="directionToggle">
                 <span class="dir-slider"></span>
             </label>
-            <span class="dir-label right inactive" id="dirLabelRight">Yen to NZD</span>
+            <span class="dir-label right inactive" id="dirLabelRight">NZD to Yen</span>
         </div>
 
         <!-- Input -->
@@ -635,7 +635,7 @@
         <!-- Results -->
         <div class="results-grid">
             <div class="result-box" id="nzdResultBox">
-                <div class="result-label">FOB (NZD Cost to Customer)</div>
+                <div class="result-label">NZD Cost to Customer</div>
                 <div class="result-value" id="totalNZD">$0.00</div>
                 <div class="result-sub">incl. all costs</div>
             </div>
@@ -658,11 +658,6 @@
                     <option value="Gulliver">Gulliver</option>
                     <option value="Heiwa">Heiwa</option>
                 </select>
-            </div>
-            <div class="car-cost-result">
-                <div class="result-label">Car Cost</div>
-                <div class="result-value" id="carCostYen">&yen;0</div>
-                <div class="result-sub" id="agentFeeSub">Agent fee: ¥0</div>
             </div>
             <div class="agent-row" style="margin-top: 10px; justify-content: space-between;">
                 <div class="label-text">Margin <button class="margin-info-btn" id="marginInfoBtn">Breakdown</button></div>
@@ -1097,7 +1092,7 @@
         function calculate() {
             const costs = getCosts();
             const rawInput = parseInputValue();
-            const isYenToNZD = directionToggle.checked;
+            const isYenToNZD = !directionToggle.checked;
             const inputAmount = isYenToNZD ? rawInput * 1000 : rawInput;
             const isEuropean = toggleEuropean.checked;
             const isSoC = toggleSoC.checked;
@@ -1117,16 +1112,27 @@
             const costItems = getFixedCostItems(costs, isEuropean, isSoC, isCompliance, isHeat, isEV);
 
             let nzdExclGST, gst, nzdInclGST, nzdCostToCustomer, yenTotal;
+            let carCostYen = 0;
+            let agentFeeYen = 0;
+            let agentMarginYen = 0;
             let breakdownHTML = '';
 
             if (isYenToNZD) {
-                yenTotal = inputAmount;
+                // Input is car cost yen (÷1000 already applied via inputAmount)
+                carCostYen = inputAmount;
+                const agentResult = getAgentFee(agent, carCostYen);
+                agentFeeYen = agentResult.fee;
+                agentMarginYen = agentResult.margin;
+                yenTotal = carCostYen + agentFeeYen; // FOB = car cost + agent fee
+
                 nzdExclGST = customerRate ? (yenTotal / customerRate) : 0;
                 gst = nzdExclGST * 0.15;
                 nzdInclGST = nzdExclGST + gst;
                 nzdCostToCustomer = nzdInclGST + fixedCosts;
 
-                breakdownHTML += brkRow('Yen Input', fmtJPY(yenTotal));
+                breakdownHTML += brkRow('Car Cost (input)', fmtJPY(carCostYen));
+                breakdownHTML += brkRow('+ Agent Fee (' + agent + ')', '+' + fmtJPY(agentFeeYen), 'addition');
+                breakdownHTML += brkRow('FOB', fmtJPY(yenTotal), 'subtotal');
                 breakdownHTML += brkRow('&divide; Customer Rate (' + customerRate.toFixed(2) + ')', '');
                 breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
                 breakdownHTML += brkRow('+ GST (15%)', '+' + fmtNZD(gst), 'addition');
@@ -1136,11 +1142,23 @@
                 }
                 breakdownHTML += brkRow('NZD Cost to Customer', fmtNZD(nzdCostToCustomer), 'total');
             } else {
+                // Input is NZD cost to customer — derive FOB yen, then car cost for margin
                 nzdCostToCustomer = inputAmount;
                 nzdInclGST = nzdCostToCustomer - fixedCosts;
                 gst = nzdInclGST * 3 / 23;
                 nzdExclGST = nzdInclGST - gst;
-                yenTotal = nzdExclGST * customerRate;
+                yenTotal = nzdExclGST * customerRate; // FOB yen
+
+                // Derive car cost iteratively (for margin calculation only)
+                carCostYen = yenTotal;
+                for (let i = 0; i < 10; i++) {
+                    const result = getAgentFee(agent, carCostYen);
+                    agentFeeYen = result.fee;
+                    agentMarginYen = result.margin;
+                    const newCarCost = yenTotal - agentFeeYen;
+                    if (newCarCost === carCostYen) break;
+                    carCostYen = newCarCost;
+                }
 
                 breakdownHTML += brkRow('NZD Cost to Customer', fmtNZD(nzdCostToCustomer));
                 for (const item of costItems) {
@@ -1151,21 +1169,6 @@
                 breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
                 breakdownHTML += brkRow('&times; Customer Rate (' + customerRate.toFixed(2) + ')', '');
                 breakdownHTML += brkRow('FOB', fmtJPY(yenTotal), 'total');
-            }
-
-            // --- Car Cost calculation (in yen) ---
-            // Car Cost = FOB (yenTotal) - Agent Fee
-            // Agent fee depends on Car Cost → solve iteratively (all agents are tiered)
-            let carCostYen = yenTotal; // initial guess
-            let agentFeeYen = 0;
-            let agentMarginYen = 0;
-            for (let i = 0; i < 10; i++) {
-                const result = getAgentFee(agent, carCostYen);
-                agentFeeYen = result.fee;
-                agentMarginYen = result.margin;
-                const newCarCost = yenTotal - agentFeeYen;
-                if (newCarCost === carCostYen) break;
-                carCostYen = newCarCost;
             }
 
             // --- Margin calculation ---
@@ -1192,22 +1195,11 @@
 
             const totalMargin = variableMargin + agentMarginNZD + rateMarkup;
 
-            // Add to breakdown
-            breakdownHTML += brkRow('', '');
-            breakdownHTML += brkRow('<strong>Car Cost Calculation</strong>', '');
-            breakdownHTML += brkRow('FOB', fmtJPY(yenTotal));
-            breakdownHTML += brkRow('- Agent Fee (' + agent + ')', '-' + fmtJPY(agentFeeYen), 'deduction');
-            breakdownHTML += brkRow('Car Cost', fmtJPY(carCostYen), 'total');
-
             breakdownEl.innerHTML = breakdownHTML;
 
             document.getElementById('totalNZD').textContent = fmtNZD(nzdCostToCustomer);
             document.getElementById('totalJPY').textContent = fmtJPY(yenTotal);
             document.getElementById('yenRateSub').textContent = '@ ' + customerRate.toFixed(2) + '/NZD';
-
-            // Car Cost display
-            document.getElementById('carCostYen').textContent = fmtJPY(carCostYen);
-            document.getElementById('agentFeeSub').textContent = 'Agent fee: ' + fmtJPY(agentFeeYen);
 
             // Margin display
             document.getElementById('marginDisplay').textContent = fmtNZD(totalMargin);
@@ -1266,21 +1258,21 @@
 
         // --- Direction toggle ---
         directionToggle.addEventListener('change', function() {
-            const isYenToNZD = this.checked;
-            document.getElementById('dirLabelLeft').classList.toggle('active', !isYenToNZD);
-            document.getElementById('dirLabelLeft').classList.toggle('inactive', isYenToNZD);
-            document.getElementById('dirLabelRight').classList.toggle('active', isYenToNZD);
-            document.getElementById('dirLabelRight').classList.toggle('inactive', !isYenToNZD);
+            const isYenToNZD = !this.checked; // left = Yen to NZD = unchecked
+            document.getElementById('dirLabelLeft').classList.toggle('active', isYenToNZD);
+            document.getElementById('dirLabelLeft').classList.toggle('inactive', !isYenToNZD);
+            document.getElementById('dirLabelRight').classList.toggle('active', !isYenToNZD);
+            document.getElementById('dirLabelRight').classList.toggle('inactive', isYenToNZD);
 
             const nzdBox = document.getElementById('nzdResultBox');
             const yenBox = document.getElementById('yenResultBox');
 
             if (isYenToNZD) {
-                document.getElementById('inputSectionLabel').textContent = 'Input - Yen FOB (÷1000)';
+                document.getElementById('inputSectionLabel').textContent = 'Input - Car Cost (yen, \u00F71000)';
                 document.getElementById('inputPrefix').textContent = '\u00A5';
-                amountInput.placeholder = '0 (e.g. 3500 = ¥3,500,000)';
+                amountInput.placeholder = '0 (e.g. 3500 = \u00A53,500,000)';
                 document.getElementById('costsSectionLabel').textContent = 'Additions (all GST-exempt)';
-                yenBox.classList.add('is-input');
+                yenBox.classList.remove('is-input');
                 yenBox.classList.remove('is-output');
                 nzdBox.classList.add('is-output');
                 nzdBox.classList.remove('is-input');
@@ -1377,8 +1369,8 @@
 
         // --- Init ---
         loadCosts();
-        // Default to Yen to NZD
-        directionToggle.checked = true;
+        // Default to Yen to NZD (left, unchecked)
+        directionToggle.checked = false;
         directionToggle.dispatchEvent(new Event('change'));
         fetchRate();
         setInterval(fetchRate, 30 * 60 * 1000);
