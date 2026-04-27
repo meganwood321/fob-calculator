@@ -836,6 +836,16 @@
             return { fee: last.fee, margin: last.margin };
         }
 
+        // --- Agent default additional Japan costs (yen) ---
+        const JAPAN_COSTS = {
+            'Nichibo':  0,
+            'WEINS':    7500,
+            'NTP':      0,
+            'Autobacs': 0,
+            'Gulliver': 0,
+            'Heiwa':    0
+        };
+
         // --- Agent-specific freight charges ---
         const AGENT_FREIGHT = {
             'Nichibo':  { costToCustomer: 2072, costToSBL: 1570 },
@@ -1291,6 +1301,7 @@
                 amountInput.placeholder = '0 (e.g. 3500 = \u00A53,500,000)';
                 document.getElementById('costsSectionLabel').textContent = 'Additions (all GST-exempt)';
                 japanCostsSection.style.display = '';
+                applyJapanCostsDefault();
                 yenBox.classList.remove('is-input');
                 yenBox.classList.remove('is-output');
                 nzdBox.classList.add('is-output');
@@ -1328,6 +1339,13 @@
 
         function parseJapanCostsValue() {
             return parseFloat(japanCostsInput.value.replace(/,/g, '')) || 0;
+        }
+
+        function applyJapanCostsDefault() {
+            const agent = document.getElementById('agentSelect').value;
+            const defaultYen = JAPAN_COSTS[agent] || 0;
+            japanCostsInput.value = defaultYen > 0 ? (defaultYen / 1000) : '';
+            formatJapanCostsWithCommas();
         }
 
         function formatWithCommas(input) {
@@ -1368,7 +1386,12 @@
         toggleCompliance.addEventListener('change', calculate);
         toggleHeat.addEventListener('change', calculate);
         toggleEV.addEventListener('change', calculate);
-        document.getElementById('agentSelect').addEventListener('change', calculate);
+        document.getElementById('agentSelect').addEventListener('change', function() {
+            if (!directionToggle.checked) { // Yen→NZD mode
+                applyJapanCostsDefault();
+            }
+            calculate();
+        });
 
         // Settings inputs: save + recalculate on every change
         Object.values(setCost).forEach(function(input) {
