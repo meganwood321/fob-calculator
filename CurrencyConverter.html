@@ -1344,8 +1344,7 @@
         function applyJapanCostsDefault() {
             const agent = document.getElementById('agentSelect').value;
             const defaultYen = JAPAN_COSTS[agent] || 0;
-            japanCostsInput.value = defaultYen > 0 ? (defaultYen / 1000) : '';
-            formatJapanCostsWithCommas();
+            japanCostsInput.value = defaultYen > 0 ? String(defaultYen / 1000) : '';
         }
 
         function formatWithCommas(input) {
