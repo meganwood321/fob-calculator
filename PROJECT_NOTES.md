@@ -5,7 +5,7 @@ A bi-directional FOB cost calculator that converts between NZD and Japanese Yen.
 
 Built for Megan starting 2026-02-15. Renamed to "Jason's Calculator" on 2026-02-22.
 
-## Current State: Phase 5b - Tiered Fees for All Agents, FAF/BAF/EV Loading (Complete)
+## Current State: Phase 6 - Reworked Yen→NZD flow, Japan costs, UI improvements (Complete)
 - Single HTML file: `CurrencyConverter.html`
 - Desktop copy: `D:/Users/Megan/OneDrive/Desktop/CurrencyConverter.html`
 - Project folder: `C:/ClaudeProjects/Currency Converter/`
@@ -34,9 +34,20 @@ The app has a direction toggle at the top. **Defaults to Yen to NZD** on load.
 5. = NZD Cost to Customer
 
 ## Car Cost Calculation
-- **Car Cost (yen)** = FOB (yen) - Agent Oncharge Fee (yen)
-- Agent fee depends on selected agent and car cost tier
-- All agents use the same tiered fee schedule — **iterative solver** resolves circular reference (agent fee depends on car cost, car cost depends on agent fee)
+
+### Yen → NZD (default direction, left side of toggle)
+- **Input**: Car Cost (yen, ÷1000)
+- Agent fee = direct tier lookup from car cost (no iteration needed)
+- **FOB (yen)** = Car Cost + Agent Fee + Additional Japan Costs
+- FOB ÷ customer rate → NZD base excl GST → + 15% GST → + NZ fixed costs → **NZD Cost to Customer**
+- Left result box: NZD Cost to Customer | Right result box: FOB (yen)
+
+### NZD → Yen (right side of toggle)
+- **Input**: NZD Cost to Customer
+- Subtract NZ costs → extract GST → × customer rate → **FOB (yen)**
+- **Car Cost (yen)** = FOB − Agent Fee − Additional Japan Costs (iterative solver)
+- Left result box: Car Cost (yen) | Right result box: FOB (yen)
+- All agents use the same tiered fee schedule — iterative solver resolves the circular reference
 
 ## Agent Fee Data
 All agents share one 28-tier fee schedule, defined once as `TIERED_FEES` and referenced by every agent in `AGENT_FEES`. Each tier has `fee` (oncharge) and `margin` (oncharge - actual agent fee).
@@ -128,7 +139,8 @@ Note: Freight is not in the Variables panel — it's driven by the selected agen
 8. **Margin row**: Total margin in NZD (green text) + "Breakdown" button
    - Toggles collapsible panel showing all 3 margin parts with formulas
 9. **Options toggles**: European, SoC, Compliance, Heat Treatment, EV Loading
-10. **Auto deductions**: Brokerage, Freight, FAF, BAF, and Marine Insurance GST (always on)
+10. **Additional Japan Costs** input (¥, ÷1000): visible in both directions, auto-fills with agent default
+11. **Auto deductions**: Brokerage, Freight, FAF, BAF, and Marine Insurance GST (always on)
 11. **Breakdown**: Full step-by-step calculation including Car Cost section
 12. **Status**: Rate update timestamp
 
@@ -180,7 +192,8 @@ Note: Freight is not in the Variables panel — it's driven by the selected agen
 - **Phase 4f** (2026-02-22): Moved Options section above Deductions section
 - **Phase 4g** (2026-02-23): Added Margin breakdown toggle button with detailed 3-part breakdown panel
 - **Phase 5a** (2026-02-28): Updated SoC to $440/$390, agent-specific freight (Nichibo $2041/$1540, others $2262/$1850), yen input ÷1000, comma-formatted input field
-- **Phase 5b** (2026-04-15): All agents now use the same 28-tier fee schedule (WEINS/NTP/Autobacs/Gulliver/Heiwa were previously flat ¥112,000); added FAF ($1) and BAF ($1) as always-applied GST-exempt costs; added EV Loading ($575) optional toggle; updated Nichibo freight to $2,072/$1,570; DEFAULTS_VERSION bumped to 4 - CURRENT
+- **Phase 5b** (2026-04-15): All agents now use the same 28-tier fee schedule; FAF/BAF/EV Loading added; Nichibo freight updated; DEFAULTS_VERSION bumped to 4
+- **Phase 6** (2026-04-27): Reworked Yen→NZD so input is Car Cost (not FOB); FOB = Car Cost + Agent Fee + Additional Japan Costs; toggle swapped so Yen→NZD is on left and defaults; NZD→Yen left box shows Car Cost (yen); agent fee displayed as subtitle under Agent label; Additional Japan Costs field visible in both directions with agent defaults from spreadsheet table; FAF/BAF fixed as zero-margin pass-through; Agents fees spreadsheet updated so all 6 agents have full 28-tier table - CURRENT
 
 ## Hosting / GitHub
 - **Live URL**: https://meganwood321.github.io/fob-calculator/
