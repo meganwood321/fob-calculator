@@ -632,6 +632,17 @@
             </div>
         </div>
 
+        <!-- Additional Japan Costs (Yen→NZD only) -->
+        <div id="japanCostsSection" style="display:none;">
+            <div class="section-label">Additional Japan Costs (&yen;, &divide;1000)</div>
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <span class="prefix">&yen;</span>
+                    <input type="text" id="japanCostsInput" placeholder="0 (e.g. 500 = &yen;500,000)" inputmode="decimal" autocomplete="off">
+                </div>
+            </div>
+        </div>
+
         <!-- Results -->
         <div class="results-grid">
             <div class="result-box" id="nzdResultBox">
@@ -896,6 +907,9 @@
             ev: document.getElementById('setCost_ev')
         };
 
+        const japanCostsInput = document.getElementById('japanCostsInput');
+        const japanCostsSection = document.getElementById('japanCostsSection');
+
         let liveYenRate = null;
         const YEN_MARGIN = 0.70;
 
@@ -1123,7 +1137,8 @@
                 const agentResult = getAgentFee(agent, carCostYen);
                 agentFeeYen = agentResult.fee;
                 agentMarginYen = agentResult.margin;
-                yenTotal = carCostYen + agentFeeYen; // FOB = car cost + agent fee
+                const additionalJapanYen = parseJapanCostsValue() * 1000;
+                yenTotal = carCostYen + agentFeeYen + additionalJapanYen; // FOB
 
                 nzdExclGST = customerRate ? (yenTotal / customerRate) : 0;
                 gst = nzdExclGST * 0.15;
@@ -1132,6 +1147,9 @@
 
                 breakdownHTML += brkRow('Car Cost (input)', fmtJPY(carCostYen));
                 breakdownHTML += brkRow('+ Agent Fee (' + agent + ')', '+' + fmtJPY(agentFeeYen), 'addition');
+                if (additionalJapanYen > 0) {
+                    breakdownHTML += brkRow('+ Additional Japan Costs', '+' + fmtJPY(additionalJapanYen), 'addition');
+                }
                 breakdownHTML += brkRow('FOB', fmtJPY(yenTotal), 'subtotal');
                 breakdownHTML += brkRow('&divide; Customer Rate (' + customerRate.toFixed(2) + ')', '');
                 breakdownHTML += brkRow('NZD Base (excl. GST)', fmtNZD(nzdExclGST), 'subtotal');
@@ -1272,6 +1290,7 @@
                 document.getElementById('inputPrefix').textContent = '\u00A5';
                 amountInput.placeholder = '0 (e.g. 3500 = \u00A53,500,000)';
                 document.getElementById('costsSectionLabel').textContent = 'Additions (all GST-exempt)';
+                japanCostsSection.style.display = '';
                 yenBox.classList.remove('is-input');
                 yenBox.classList.remove('is-output');
                 nzdBox.classList.add('is-output');
@@ -1281,6 +1300,7 @@
                 document.getElementById('inputPrefix').textContent = '$';
                 amountInput.placeholder = '0.00';
                 document.getElementById('costsSectionLabel').textContent = 'Deductions (all GST-exempt)';
+                japanCostsSection.style.display = 'none';
                 nzdBox.classList.add('is-input');
                 nzdBox.classList.remove('is-output');
                 yenBox.classList.add('is-output');
@@ -1306,30 +1326,42 @@
             return parseFloat(amountInput.value.replace(/,/g, '')) || 0;
         }
 
-        function formatInputWithCommas() {
-            const cursorPos = amountInput.selectionStart;
-            const oldVal = amountInput.value;
+        function parseJapanCostsValue() {
+            return parseFloat(japanCostsInput.value.replace(/,/g, '')) || 0;
+        }
+
+        function formatWithCommas(input) {
+            const cursorPos = input.selectionStart;
+            const oldVal = input.value;
             const oldLen = oldVal.length;
 
-            // Strip non-numeric except dots and minus
             let raw = oldVal.replace(/[^0-9.\-]/g, '');
-
-            // Split on decimal point
             const parts = raw.split('.');
-            // Add commas to integer part
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             const newVal = parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
 
-            amountInput.value = newVal;
+            input.value = newVal;
 
-            // Adjust cursor position for added/removed commas
             const lenDiff = newVal.length - oldLen;
-            amountInput.setSelectionRange(cursorPos + lenDiff, cursorPos + lenDiff);
+            input.setSelectionRange(cursorPos + lenDiff, cursorPos + lenDiff);
+        }
+
+        function formatInputWithCommas() {
+            formatWithCommas(amountInput);
+        }
+
+        function formatJapanCostsWithCommas() {
+            formatWithCommas(japanCostsInput);
         }
 
         // --- Event listeners ---
         amountInput.addEventListener('input', function() {
             formatInputWithCommas();
+            calculate();
+        });
+
+        japanCostsInput.addEventListener('input', function() {
+            formatJapanCostsWithCommas();
             calculate();
         });
         toggleSoC.addEventListener('change', calculate);
