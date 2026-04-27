@@ -1203,8 +1203,8 @@
             // Part 1: Variable margins (charge - actual cost)
             let variableMargin = (costs.brokerage - ACTUAL_COSTS.brokerage)
                                + (costs.freight - agentFreight.costToSBL)
-                               + (costs.faf - ACTUAL_COSTS.faf)
-                               + (costs.baf - ACTUAL_COSTS.baf)
+                               + (costs.faf - costs.faf)   // pass-through: no margin
+                               + (costs.baf - costs.baf)   // pass-through: no margin
                                + (costs.marineInsGst - ACTUAL_COSTS.marineInsGst);
             if (isEuropean && isSoC) variableMargin += (costs.soc - ACTUAL_COSTS.soc);
             if (isCompliance) variableMargin += isEuropean
@@ -1237,8 +1237,8 @@
             mbHTML += '<div class="margin-breakdown-row"><span><strong>Variable Margins</strong></span><span></span></div>';
             mbHTML += mbRow('Brokerage (' + fmtNZD(costs.brokerage) + ' − ' + fmtNZD(ACTUAL_COSTS.brokerage) + ')', fmtNZD(costs.brokerage - ACTUAL_COSTS.brokerage));
             mbHTML += mbRow('Freight (' + fmtNZD(costs.freight) + ' − ' + fmtNZD(agentFreight.costToSBL) + ')', fmtNZD(costs.freight - agentFreight.costToSBL));
-            mbHTML += mbRow('FAF (' + fmtNZD(costs.faf) + ' − ' + fmtNZD(ACTUAL_COSTS.faf) + ')', fmtNZD(costs.faf - ACTUAL_COSTS.faf));
-            mbHTML += mbRow('BAF (' + fmtNZD(costs.baf) + ' − ' + fmtNZD(ACTUAL_COSTS.baf) + ')', fmtNZD(costs.baf - ACTUAL_COSTS.baf));
+            mbHTML += mbRow('FAF (' + fmtNZD(costs.faf) + ' − ' + fmtNZD(costs.faf) + ')', fmtNZD(0));
+            mbHTML += mbRow('BAF (' + fmtNZD(costs.baf) + ' − ' + fmtNZD(costs.baf) + ')', fmtNZD(0));
             mbHTML += mbRow('Marine Ins (' + fmtNZD(costs.marineInsGst) + ' − ' + fmtNZD(ACTUAL_COSTS.marineInsGst) + ')', fmtNZD(costs.marineInsGst - ACTUAL_COSTS.marineInsGst));
             if (isEuropean && isSoC) mbHTML += mbRow('SoC (' + fmtNZD(costs.soc) + ' − ' + fmtNZD(ACTUAL_COSTS.soc) + ')', fmtNZD(costs.soc - ACTUAL_COSTS.soc));
             if (isCompliance) {
