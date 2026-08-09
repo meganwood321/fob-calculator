@@ -65,6 +65,43 @@
             color: #5dade2;
         }
 
+        .header-btns {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .qr-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal.open {
+            display: flex;
+        }
+
+        .qr-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .qr-box p {
+            margin: 12px 0 0;
+            color: #333;
+            font-size: 0.8rem;
+        }
+
+        .qr-box img {
+            display: block;
+        }
+
         .rate-info {
             text-align: center;
             font-size: 0.85rem;
@@ -554,7 +591,17 @@
     <div class="container">
         <div class="header-row">
             <h1>Jason's Calculator</h1>
-            <button class="settings-btn" id="settingsBtn">&#9881; Variables</button>
+            <div class="header-btns">
+                <button class="settings-btn" id="qrBtn">&#128247; QR</button>
+                <button class="settings-btn" id="settingsBtn">&#9881; Variables</button>
+            </div>
+        </div>
+
+        <div class="qr-modal" id="qrModal">
+            <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://meganwood321.github.io/fob-calculator/CurrencyConverter.html" width="200" height="200" alt="QR code">
+                <p>Scan to open on your phone</p>
+            </div>
         </div>
         <div class="rate-info">
             Estimated Spot Buy rate: 1 NZD = <span id="rateDisplay">...</span> JPY
@@ -1428,6 +1475,19 @@
             const panel = document.getElementById('settingsPanel');
             panel.classList.toggle('open');
             this.classList.toggle('active');
+        });
+
+        // QR modal toggle
+        const qrModal = document.getElementById('qrModal');
+        document.getElementById('qrBtn').addEventListener('click', function() {
+            qrModal.classList.toggle('open');
+            this.classList.toggle('active');
+        });
+        qrModal.addEventListener('click', function(e) {
+            if (e.target === qrModal) {
+                qrModal.classList.remove('open');
+                document.getElementById('qrBtn').classList.remove('active');
+            }
         });
 
         // Reset & save-as-defaults buttons
