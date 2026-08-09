@@ -1034,7 +1034,7 @@
         // --- Fetch live rate ---
         async function fetchRate() {
             try {
-                const res = await fetch('https://open.er-api.com/v6/latest/NZD');
+                const res = await fetch('https://open.er-api.com/v6/latest/NZD', { cache: 'no-store' });
                 const data = await res.json();
                 if (data.result === 'success') {
                     liveYenRate = data.rates.JPY;
