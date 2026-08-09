@@ -193,21 +193,36 @@ Note: Freight is not in the Variables panel — it's driven by the selected agen
 - **Phase 4g** (2026-02-23): Added Margin breakdown toggle button with detailed 3-part breakdown panel
 - **Phase 5a** (2026-02-28): Updated SoC to $440/$390, agent-specific freight (Nichibo $2041/$1540, others $2262/$1850), yen input ÷1000, comma-formatted input field
 - **Phase 5b** (2026-04-15): All agents now use the same 28-tier fee schedule; FAF/BAF/EV Loading added; Nichibo freight updated; DEFAULTS_VERSION bumped to 4
-- **Phase 6** (2026-04-27): Reworked Yen→NZD so input is Car Cost (not FOB); FOB = Car Cost + Agent Fee + Additional Japan Costs; toggle swapped so Yen→NZD is on left and defaults; NZD→Yen left box shows Car Cost (yen); agent fee displayed as subtitle under Agent label; Additional Japan Costs field visible in both directions with agent defaults from spreadsheet table; FAF/BAF fixed as zero-margin pass-through; Agents fees spreadsheet updated so all 6 agents have full 28-tier table - CURRENT
+- **Phase 6** (2026-04-27): Reworked Yen→NZD so input is Car Cost (not FOB); FOB = Car Cost + Agent Fee + Additional Japan Costs; toggle swapped so Yen→NZD is on left and defaults; NZD→Yen left box shows Car Cost (yen); agent fee displayed as subtitle under Agent label; Additional Japan Costs field visible in both directions with agent defaults from spreadsheet table; FAF/BAF fixed as zero-margin pass-through; Agents fees spreadsheet updated so all 6 agents have full 28-tier table
+- **Phase 7** (2026-08-09): Exchange rate sync fixes (cache: no-store, visibilitychange refresh), QR code button in header, cache-control meta tags, Spot Buy Rate Adjustment changed to -1.80, BAF default changed to $250, migrated hosting to Cloudflare Workers with Access gate - CURRENT
 
-## Hosting / GitHub
-- **Live URL**: https://meganwood321.github.io/fob-calculator/
+## Hosting / Cloudflare
+- **Live URL**: https://jasons-calculator.meganwood321.workers.dev (ACCESS RESTRICTED)
+- **GitHub Pages URL**: https://meganwood321.github.io/fob-calculator/ (still live but unprotected — disable if not needed)
 - **GitHub repo**: https://github.com/meganwood321/fob-calculator
-- **GitHub username**: meganwood321
-- **Branch**: main
-- **GitHub Pages**: enabled, serves from main branch root
-- `index.html` redirects to `CurrencyConverter.html`
-- To update: push changes to main branch, site auto-updates in ~1 min
+- **Cloudflare Worker**: jasons-calculator (meganwood321 account)
+- **Branch**: main — auto-deploys to Cloudflare on every push
+- **Deploy command**: `npx wrangler deploy` (run by Cloudflare, not locally)
+- App files are in `public/` folder (CurrencyConverter.html, index.html, $ → ¥.png)
+- To update: push changes to main branch, Cloudflare auto-deploys in ~1 min
 - localStorage is per-browser/device (each computer has its own saved Variables)
-- **Apple Touch Icon**: `$ → ¥.png` - custom icon for iPhone home screen shortcut
+
+## Access Control (Cloudflare Zero Trust)
+- Gate: Cloudflare Access — visitors must enter their email and a one-time code
+- Auth method: Email OTP (no password/account needed)
+- To add/remove users: Cloudflare dashboard → Zero Trust → Access controls → Applications → jasons-calculator.meganwood321.workers.dev → Allow approved users policy → edit Emails list
+- Production URL: Restricted ✓
+- Preview URL: Restricted ✓
+
+## DEFAULTS_VERSION History
+- v4: Original defaults
+- v5: Spot Buy Rate Adjustment changed to -1.80
+- v6: BAF changed to $250 (current)
 
 ## Key File Locations
 - **Megan's actual Desktop**: `D:/Users/Megan/OneDrive/Desktop/` (OneDrive-synced)
 - **Project folder**: `C:/ClaudeProjects/Currency Converter/`
+- **App file**: `C:/ClaudeProjects/Currency Converter/public/CurrencyConverter.html`
+- **Desktop copy command**: `Copy-Item "C:\ClaudeProjects\Currency Converter\public\CurrencyConverter.html" "D:\Users\Megan\OneDrive\Desktop\CurrencyConverter.html" -Force`
 - **Git repo**: `C:/ClaudeProjects/Currency Converter/.git/`
 - **Note**: `C:/Users/Megan/Desktop/` is NOT the visible desktop
