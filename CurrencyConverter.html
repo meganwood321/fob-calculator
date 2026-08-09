@@ -1441,6 +1441,9 @@
         directionToggle.dispatchEvent(new Event('change'));
         fetchRate();
         setInterval(fetchRate, 30 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') fetchRate();
+        });
     </script>
 </body>
 </html>
